@@ -1,6 +1,6 @@
 import { formatWater } from '../lib/units.js';
 
-const EXERCISE_WORDS = { weights: 'lifted weights', treadmill: 'treadmill', dance: 'danced' };
+const EXERCISE_WORDS = { weights: 'lifted weights', treadmill: 'treadmill', dance: 'danced', yoga: 'yoga', walk: 'walked' };
 
 function describe(kind, r, units) {
   if (kind === 'food') {
@@ -10,7 +10,7 @@ function describe(kind, r, units) {
   return { what: `${EXERCISE_WORDS[r.kind]} ${r.minutes} min`, meta: `~${r.calories_burned} kcal` };
 }
 
-export default function JournalList({ logs, units, onDelete }) {
+export default function JournalList({ logs, units, onDelete, aside }) {
   const entries = [
     ...logs.food.map((r) => ({ kind: 'food', r })),
     ...logs.water.map((r) => ({ kind: 'water', r })),
@@ -19,7 +19,10 @@ export default function JournalList({ logs, units, onDelete }) {
 
   return (
     <section className="journal" aria-label="Today's entries">
-      <h3>dear diary, today I...</h3>
+      <div className="journal-head">
+        <h3>dear diary, today I...</h3>
+        {aside}
+      </div>
       {entries.length === 0 ? (
         <p className="nothing" style={{ margin: 0 }}>...haven't written anything yet. tap the pen ✎</p>
       ) : (

@@ -2,11 +2,15 @@ import { useState } from 'react';
 import Sheet, { InkPicker } from './Sheet.jsx';
 import { caloriesBurned } from '../../supabase/functions/_shared/goals.js';
 
-const TITLES = { weights: 'lifted weights', treadmill: 'treadmill time', dance: 'danced it out' };
+const TITLES = {
+  weights: 'lifted weights', treadmill: 'treadmill time', dance: 'danced it out', yoga: 'yoga flow', walk: 'went for a walk'
+};
 const INTENSITY = {
   weights: { easy: 'light', moderate: 'steady', hard: 'heavy' },
   treadmill: { easy: 'walk', moderate: 'jog', hard: 'run' },
-  dance: { easy: 'groove', moderate: 'dance', hard: 'cardio dance' }
+  dance: { easy: 'groove', moderate: 'dance', hard: 'cardio dance' },
+  yoga: { easy: 'gentle stretch', moderate: 'flow', hard: 'power yoga' },
+  walk: { easy: 'stroll', moderate: 'steady walk', hard: 'brisk / hills' }
 };
 
 export default function ExerciseSheet({ kind, ink, setInk, weightKg, onAdd, onClose }) {

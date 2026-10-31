@@ -205,7 +205,7 @@ button { cursor: pointer; }
 .doll-btn { background: none; border: none; padding: 0; }
 .doll-svg { width: 210px; height: auto; transition: filter 0.8s ease; }
 .doll-mood { font-family: var(--script); font-size: 24px; text-align: center; margin-top: -4px; }
-.moves { display: flex; gap: 18px; margin-top: 10px; }
+.moves { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 14px; margin-top: 10px; max-width: 330px; }
 .move {
   display: flex;
   flex-direction: column;
@@ -213,8 +213,8 @@ button { cursor: pointer; }
   background: rgba(255, 255, 255, 0.55);
   border: 2px solid var(--ink);
   border-radius: 46% 54% 50% 50% / 52% 48% 52% 48%;
-  width: 78px;
-  height: 78px;
+  width: 70px;
+  height: 70px;
   justify-content: center;
   padding: 0;
   font-size: 14px;
@@ -222,7 +222,7 @@ button { cursor: pointer; }
   gap: 2px;
 }
 .move:active { transform: scale(0.94) rotate(-2deg); }
-.move svg { width: 44px; height: 44px; }
+.move svg { width: 40px; height: 40px; }
 
 /* ---------- sheets ---------- */
 .scrim {
@@ -358,3 +358,19 @@ select.field { appearance: none; background: transparent; }
 .muted { color: var(--ink-soft); }
 
 html, body { overflow-x: hidden; }
+
+.journal-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 8px; }
+.coy-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  width: 46px;
+  flex: 0 0 46px;
+  margin-bottom: -4px;
+  transform: rotate(4deg);
+}
+.coy-btn svg { width: 100%; height: auto; display: block; }
+.coy-btn:active { transform: rotate(-4deg) scale(0.94); }
+
+.weigh-in { display: grid; grid-template-columns: 1fr auto 32px; align-items: center; white-space: nowrap; }
+.weigh-in button { background: none; border: none; color: var(--ink-soft); font-size: 18px; padding: 0; }

@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import Sheet, { InkPicker } from './Sheet.jsx';
-import { searchFoods, scaleNutrients } from '../lib/food.js';
+import { AMOUNTS, FOOD_IDEAS, getPortions, searchFoods, scaleNutrients } from '../lib/food.js';
 import { ML_PER_OZ, waterChoices } from '../lib/units.js';
 
-export default function LogSheet({ tab: initialTab, ink, setInk, units, onAdd, onClose }) {
+export default function LogSheet({ tab: initialTab, focus, ink, setInk, units, onAdd, onClose }) {
   const [tab, setTab] = useState(initialTab || 'food');
   return (
     <Sheet title="write it down" onClose={onClose}>
@@ -16,7 +16,7 @@ export default function LogSheet({ tab: initialTab, ink, setInk, units, onAdd, o
         ))}
       </div>
       {tab === 'food' ? (
-        <FoodTab ink={ink} onAdd={onAdd} />
+        <FoodTab ink={ink} focus={focus} onAdd={onAdd} />
       ) : (
         <WaterTab ink={ink} units={units} onAdd={onAdd} />
       )}
@@ -55,7 +55,33 @@ function WaterTab({ ink, units, onAdd }) {
   );
 }
 
-function FoodTab({ ink, onAdd }) {
+function Ideas({ focus, onPick }) {
+  const [cat, setCat] = useState(FOOD_IDEAS[focus] ? focus : 'protein');
+  return (
+    <div className="ideas">
+      <p className="muted" style={{ margin: '6px 0 0' }}>need ideas? foods rich in...</p>
+      <div className="chips">
+        {Object.entries(FOOD_IDEAS).map(([k, v]) => (
+          <button key={k} className={`chip ${cat === k ? 'on' : ''}`} onClick={() => setCat(k)}>
+            {v.label}
+          </button>
+        ))}
+      </div>
+      <ul className="results">
+        {FOOD_IDEAS[cat].items.map(([name, term, why]) => (
+          <li key={name}>
+            <button onClick={() => onPick(term)}>
+              <span className="name">{name}</span>
+              <span className="sub">{why}</span>
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function FoodTab({ ink, focus, onAdd }) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [status, setStatus] = useState('');
@@ -99,10 +125,10 @@ function FoodTab({ ink, onAdd }) {
           placeholder="greek yogurt, banana, oat milk..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          autoFocus
         />
       </label>
       {status && <p className="muted">{status}</p>}
+      {query.trim().length < 2 && <Ideas focus={focus} onPick={setQuery} />}
       <ul className="results">
         {results.map((f) => (
           <li key={f.id}>
@@ -125,32 +151,74 @@ function FoodTab({ ink, onAdd }) {
 }
 
 function Portion({ food, ink, onAdd, onBack }) {
-  const [mode, setMode] = useState(food.servingG ? 'serving' : 'g');
-  const [qty, setQty] = useState(food.servingG ? '1' : '100');
-  const grams = mode === 'serving' ? Number(qty) * food.servingG : Number(qty);
-  const n = useMemo(() => scaleNutrients(food.per100, grams || 0), [food, grams]);
-  const label = mode === 'serving' ? `${qty} × ${food.servingLabel || `${food.servingG} g`}` : `${qty} g`;
+  const [portions, setPortions] = useState(null);
+  const [unitIdx, setUnitIdx] = useState(0);
+  const [qty, setQty] = useState('1');
+
+  useEffect(() => {
+    const ctrl = new AbortController();
+    getPortions(food, ctrl.signal)
+      .then((p) => {
+        setPortions(p);
+        setUnitIdx(0);
+        setQty(p[0].unit === 'grams' ? '100' : '1');
+      })
+      .catch(() => {});
+    return () => ctrl.abort();
+  }, [food]);
+
+  const portion = portions?.[unitIdx];
+  const amount = Number(qty) || 0;
+  const grams = portion ? amount * portion.grams : 0;
+  const n = useMemo(() => scaleNutrients(food.per100, grams), [food, grams]);
+  const qtyText = AMOUNTS.find(([, v]) => v === amount)?.[0] ?? qty;
+  const label = portion
+    ? portion.unit === 'grams' ? `${qty} g` : `${qtyText} ${portion.unit}${portion.unit !== 'oz' ? ` (${Math.round(grams)} g)` : ''}`
+    : '';
+
+  const pickUnit = (i) => {
+    setUnitIdx(i);
+    if (portions[i].unit === 'grams') setQty('100');
+    else if (portions[unitIdx].unit === 'grams') setQty('1');
+  };
 
   return (
     <>
-      <p style={{ margin: 0, color: ink, fontFamily: 'var(--script)', fontSize: 26 }}>{food.name}</p>
+      <p style={{ margin: 0, color: ink, fontFamily: 'var(--script)', fontSize: 26, lineHeight: 1.1 }}>{food.name}</p>
       <p className="muted" style={{ margin: 0 }}>{food.brand || food.source}</p>
-      <div className="row">
-        <label>
-          how much? ({mode === 'g' ? 'grams' : 'servings'})
-          <input className="field" inputMode="decimal" value={qty} onChange={(e) => setQty(e.target.value)} />
-        </label>
-        {food.servingG && (
-          <div className="chips" style={{ flex: 2 }}>
-            <button className={`chip ${mode === 'serving' ? 'on' : ''}`} onClick={() => { setMode('serving'); setQty('1'); }}>
-              servings
-            </button>
-            <button className={`chip ${mode === 'g' ? 'on' : ''}`} onClick={() => { setMode('g'); setQty(String(food.servingG)); }}>
-              grams
-            </button>
+      {!portions ? (
+        <p className="muted">finding portion sizes...</p>
+      ) : (
+        <>
+          <p className="muted" style={{ margin: '6px 0 0' }}>how much?</p>
+          {portion.unit !== 'grams' && (
+            <div className="chips">
+              {AMOUNTS.map(([text, v]) => (
+                <button key={text} className={`chip ${amount === v ? 'on' : ''}`} onClick={() => setQty(String(v))}>
+                  {text}
+                </button>
+              ))}
+            </div>
+          )}
+          <div className="row">
+            <label style={{ flex: '0 0 72px' }}>
+              amount
+              <input className="field" inputMode="decimal" value={qty} onChange={(e) => setQty(e.target.value)} />
+            </label>
+            <label>
+              of
+              <select className="field" value={unitIdx} onChange={(e) => pickUnit(Number(e.target.value))}>
+                {portions.map((p, i) => (
+                  <option key={p.unit} value={i}>
+                    {p.unit}
+                    {p.unit !== 'grams' && p.unit !== 'oz' ? ` (${Math.round(p.grams)} g)` : ''}
+                  </option>
+                ))}
+              </select>
+            </label>
           </div>
-        )}
-      </div>
+        </>
+      )}
       <Macros n={n} />
       <div className="row">
         <button className="btn" onClick={onBack}>back</button>

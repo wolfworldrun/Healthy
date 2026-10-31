@@ -2,7 +2,7 @@
 // otherwise a localStorage-backed demo so the UI can be tried before setup.
 import { supabase, isDemo } from './supabase.js';
 
-const TABLES = { food: 'food_logs', water: 'water_logs', exercise: 'exercise_logs' };
+const TABLES = { food: 'food_logs', water: 'water_logs', exercise: 'exercise_logs', weight: 'weight_logs' };
 
 export function todayKey(d = new Date()) {
   const p = (n) => String(n).padStart(2, '0');
@@ -51,7 +51,7 @@ export async function loadDay(day) {
     return { food: pick('food'), water: pick('water'), exercise: pick('exercise') };
   }
   const [food, water, exercise] = await Promise.all(
-    Object.values(TABLES).map((t) =>
+    [TABLES.food, TABLES.water, TABLES.exercise].map((t) =>
       supabase.from(t).select('*').eq('day', day).order('created_at').then(({ data, error }) => {
         if (error) throw error;
         return data;
@@ -65,7 +65,7 @@ export async function addEntry(kind, row) {
   if (isDemo) {
     const all = demo.read('logs', { food: [], water: [], exercise: [] });
     const saved = { ...row, id: Date.now(), created_at: new Date().toISOString() };
-    all[kind].push(saved);
+    (all[kind] ??= []).push(saved);
     demo.write('logs', all);
     return saved;
   }
@@ -77,10 +77,21 @@ export async function addEntry(kind, row) {
 export async function deleteEntry(kind, id) {
   if (isDemo) {
     const all = demo.read('logs', { food: [], water: [], exercise: [] });
-    all[kind] = all[kind].filter((r) => r.id !== id);
+    all[kind] = (all[kind] ?? []).filter((r) => r.id !== id);
     demo.write('logs', all);
     return;
   }
   const { error } = await supabase.from(TABLES[kind]).delete().eq('id', id);
   if (error) throw error;
+}
+
+// Full weight history, oldest first.
+export async function loadWeights() {
+  if (isDemo) {
+    const all = demo.read('logs', {});
+    return [...(all.weight ?? [])].sort((a, b) => a.day.localeCompare(b.day));
+  }
+  const { data, error } = await supabase.from(TABLES.weight).select('*').order('day').order('created_at');
+  if (error) throw error;
+  return data;
 }

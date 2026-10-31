@@ -90,6 +90,32 @@ export const Dancer = () => (
   </svg>
 );
 
+export const Yoga = () => (
+  <svg viewBox="0 0 48 48" filter="url(#wobble)" aria-hidden="true">
+    <g {...S}>
+      <path d="M8 42 L40 42" strokeWidth={1.6} />
+      <path d="M10 40 L38 40 L38 42 L10 42 Z" fill="#d9cdea" strokeWidth={1.4} />
+      <circle cx={24} cy={9} r={3.5} />
+      <path d="M24 13 L24 27" />
+      <path d="M24 17 L16 8 M24 17 L32 8" />
+      <path d="M24 27 L24 39 M24 27 L30 31 L25 34" />
+    </g>
+  </svg>
+);
+
+export const Walk = () => (
+  <svg viewBox="0 0 48 48" filter="url(#wobble)" aria-hidden="true">
+    <g {...S}>
+      <circle cx={26} cy={8} r={3.5} />
+      <path d="M25 12 L22 26" />
+      <path d="M24 16 L16 22 M24 16 L31 22" />
+      <path d="M22 26 L16 38 L12 39 M22 26 L29 32 L30 40" />
+      <path d="M6 43 q8 -3 16 0 t16 0" strokeWidth={1.4} stroke="#9cc48f" />
+      <path d="M38 14 q4 -6 7 -2 q-3 5 -7 2z" fill="#d4eadb" strokeWidth={1.4} />
+    </g>
+  </svg>
+);
+
 export const Gear = () => (
   <svg width="30" height="30" viewBox="0 0 30 30" filter="url(#wobble)" aria-hidden="true">
     <g {...S}>

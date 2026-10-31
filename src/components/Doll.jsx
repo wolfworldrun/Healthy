@@ -7,22 +7,36 @@ export const DOLL_OPTIONS = {
   skin: ['#fde3d3', '#f6cdb0', '#e7b08a', '#c98c63', '#9c6644', '#6b4430'],
   hair: ['#2b2225', '#5a3a2a', '#a0673d', '#e2bf7a', '#d98c6c', '#f2a7bf', '#b7a6d9'],
   eyes: ['#4a7bb7', '#5f8f6a', '#7a5236', '#8a7fb8', '#3b3337', '#c06c84'],
-  dress: ['#3d4f7a', '#c06c84', '#9cb89a', '#e8d9c8', '#b7a6d9', '#f2c879', '#2b2225'],
-  beanie: ['panda', 'bear', 'bunny', 'cat', 'frog', 'pig']
+  dress: ['#3d4f7a', '#7b9cc4', '#c06c84', '#9cb89a', '#e8d9c8', '#b7a6d9', '#f2c879', '#2b2225'],
+  outfit: ['pinafore', 'tee', 'overalls'],
+  beanie: ['panda', 'bear', 'bunny', 'cat', 'tuxedo', 'orange', 'greywhite', 'shiba', 'frog', 'pig']
 };
 
-export const DEFAULT_DOLL = { skin: '#fde3d3', hair: '#2b2225', eyes: '#4a7bb7', dress: '#3d4f7a', beanie: 'panda' };
+export const OUTFIT_LABELS = { pinafore: 'pinafore', tee: 'tee + baggy pants', overalls: 'overalls' };
+export const BEANIE_LABELS = {
+  panda: 'panda', bear: 'bear', bunny: 'bunny', cat: 'cat', tuxedo: 'black & white cat',
+  orange: 'orange cat', greywhite: 'grey & white cat', shiba: 'shiba inu', frog: 'frog', pig: 'pig'
+};
+
+export const DEFAULT_DOLL = {
+  skin: '#fde3d3', hair: '#2b2225', eyes: '#4a7bb7', dress: '#3d4f7a', outfit: 'pinafore', beanie: 'panda'
+};
 
 const INK = '#3b3337';
 const STROKE = { stroke: INK, strokeWidth: 2.2, strokeLinecap: 'round', strokeLinejoin: 'round' };
 
+// ears: ear shape; face: what's stitched on the front; patch: muzzle color; stripes: tabby marks.
 const BEANIES = {
-  panda: { base: '#f7f3ec', ear: '#2b2526', inner: '#2b2526', face: 'panda' },
-  bear: { base: '#b98a62', ear: '#b98a62', inner: '#ead0b4', face: 'bear' },
-  bunny: { base: '#f8eef1', ear: '#f8eef1', inner: '#f6b9c8', face: 'bunny' },
-  cat: { base: '#cfc8d3', ear: '#cfc8d3', inner: '#f3c4cf', face: 'cat' },
-  frog: { base: '#a8d396', ear: '#a8d396', inner: '#ffffff', face: 'frog' },
-  pig: { base: '#f5bcc6', ear: '#f5bcc6', inner: '#ee9fae', face: 'pig' }
+  panda: { base: '#f7f3ec', ear: '#2b2526', inner: '#2b2526', ears: 'round', face: 'panda' },
+  bear: { base: '#b98a62', ear: '#b98a62', inner: '#ead0b4', ears: 'round', face: 'bear' },
+  bunny: { base: '#f8eef1', ear: '#f8eef1', inner: '#f6b9c8', ears: 'bunny', face: 'bunny' },
+  cat: { base: '#cfc8d3', ear: '#cfc8d3', inner: '#f3c4cf', ears: 'pointy', face: 'cat' },
+  tuxedo: { base: '#2f2a2d', ear: '#2f2a2d', inner: '#f3c4cf', ears: 'pointy', face: 'cat', patch: '#f7f3ec', eye: '#f2d36b', whiskers: '#f7f3ec' },
+  orange: { base: '#f0a35e', ear: '#f0a35e', inner: '#f8cfd5', ears: 'pointy', face: 'cat', stripes: '#d0782f' },
+  greywhite: { base: '#a7a4ab', ear: '#a7a4ab', inner: '#f3c4cf', ears: 'pointy', face: 'cat', patch: '#f7f3ec' },
+  shiba: { base: '#e39b55', ear: '#e39b55', inner: '#fbe9d0', ears: 'pointy', face: 'shiba', patch: '#fbf3e6' },
+  frog: { base: '#a8d396', ear: '#a8d396', inner: '#ffffff', ears: 'frog', face: 'frog' },
+  pig: { base: '#f5bcc6', ear: '#f5bcc6', inner: '#ee9fae', ears: 'pig', face: 'pig' }
 };
 
 function Ears({ kind, b, droop }) {
@@ -38,7 +52,7 @@ function Ears({ kind, b, droop }) {
           <path d={`M${x - 4} 48 C ${x - 7} 16, ${x + 7} 16, ${x + 4} 48 Z`} fill={b.inner} />
         </>
       );
-    } else if (kind === 'cat' || kind === 'pig') {
+    } else if (kind === 'pointy' || kind === 'pig') {
       const tip = kind === 'pig' ? 28 : 18;
       shape = (
         <>
@@ -103,10 +117,27 @@ function BeanieFace({ kind, b }) {
     case 'cat':
       return (
         <g {...STROKE} strokeWidth={1.4} fill="none">
-          <circle cx={90} cy={63} r={2.2} fill={INK} stroke="none" />
-          <circle cx={110} cy={63} r={2.2} fill={INK} stroke="none" />
+          {b.stripes && (
+            <path d="M92 42 q8 4 16 0 M86 50 q14 5 28 0 M58 64 l8 2 M142 64 l-8 2" stroke={b.stripes} strokeWidth={2.4} />
+          )}
+          {b.patch && <ellipse cx={100} cy={70} rx={14} ry={8} fill={b.patch} stroke="none" />}
+          <circle cx={90} cy={63} r={2.4} fill={b.eye ?? INK} stroke="none" />
+          <circle cx={110} cy={63} r={2.4} fill={b.eye ?? INK} stroke="none" />
+          {b.eye && <path d="M90 61.5 v3 M110 61.5 v3" strokeWidth={1.2} />}
           <path d="M97 69 L100 72 L103 69" />
-          <path d="M80 70 L90 71 M80 74 L90 73 M120 70 L110 71 M120 74 L110 73" />
+          <path d="M80 70 L90 71 M80 74 L90 73 M120 70 L110 71 M120 74 L110 73" stroke={b.whiskers ?? INK} />
+        </g>
+      );
+    case 'shiba':
+      return (
+        <g>
+          <ellipse cx={100} cy={70} rx={15} ry={9} fill={b.patch} />
+          <ellipse cx={89} cy={56} rx={3} ry={2} fill={b.patch} />
+          <ellipse cx={111} cy={56} rx={3} ry={2} fill={b.patch} />
+          <circle cx={90} cy={62} r={2.2} fill={INK} />
+          <circle cx={110} cy={62} r={2.2} fill={INK} />
+          <ellipse cx={100} cy={67.5} rx={3.4} ry={2.4} fill={INK} />
+          <path d="M95 72 q2.5 3 5 0 q2.5 3 5 0" fill="none" {...STROKE} strokeWidth={1.4} />
         </g>
       );
     default:
@@ -181,7 +212,50 @@ function Flower({ health }) {
   );
 }
 
-export default function Doll({ doll = DEFAULT_DOLL, health = 1, celebrate = false, className }) {
+function Outfit({ kind, color }) {
+  if (kind === 'tee') {
+    // Baggy cream pants with a tee in the chosen color.
+    return (
+      <g>
+        <path d="M76 198 L100 198 L98 252 L68 252 Q70 224 76 198 Z" fill="#e6d9c6" {...STROKE} />
+        <path d="M100 198 L124 198 Q130 224 132 252 L102 252 Z" fill="#e6d9c6" {...STROKE} />
+        <path d="M84 236 l2 14 M116 236 l-2 14" stroke={INK} strokeWidth={1} opacity={0.4} />
+        <path d="M78 166 Q100 160 122 166 L 126 202 Q100 206 74 202 Z" fill={color} {...STROKE} />
+        <path d="M80 168 L68 186 L78 191 L86 176 Z M120 168 L132 186 L122 191 L114 176 Z" fill={color} {...STROKE} strokeWidth={1.8} />
+        <path d="M92 166 Q100 172 108 166" fill="none" {...STROKE} strokeWidth={1.4} />
+      </g>
+    );
+  }
+  if (kind === 'overalls') {
+    return (
+      <g>
+        <path d="M78 166 Q100 160 122 166 L 124 192 L 76 192 Z" fill="#fbf7f2" {...STROKE} />
+        <path d="M80 168 L70 184 L78 188 L86 175 Z M120 168 L130 184 L122 188 L114 175 Z" fill="#fbf7f2" {...STROKE} strokeWidth={1.6} />
+        <path d="M84 178 L116 178 L120 202 L80 202 Z" fill={color} {...STROKE} />
+        <path d="M74 200 L100 200 L98 250 L70 250 Q71 224 74 200 Z" fill={color} {...STROKE} />
+        <path d="M100 200 L126 200 Q129 224 130 250 L102 250 Z" fill={color} {...STROKE} />
+        <path d="M86 178 L84 166 M114 178 L116 166" stroke={color} strokeWidth={5} strokeLinecap="round" />
+        <circle cx={86} cy={180} r={2.2} fill="#f2c879" {...STROKE} strokeWidth={1} />
+        <circle cx={114} cy={180} r={2.2} fill="#f2c879" {...STROKE} strokeWidth={1} />
+        <rect x={93} y={186} width={14} height={9} rx={1.5} fill="none" {...STROKE} strokeWidth={1.2} />
+        <path d="M71 242 L98 242 M102 242 L129 242" stroke="#fbf7f2" strokeWidth={1.4} strokeDasharray="3 3" />
+      </g>
+    );
+  }
+  return (
+    <g>
+      <path d="M80 166 Q100 160 120 166 L 124 186 L 76 186 Z" fill="#fbf7f2" {...STROKE} />
+      <path d="M80 182 L120 182 L142 236 Q100 244 58 236 Z" fill={color} {...STROKE} />
+      <path d="M84 182 L86 166 M116 182 L114 166" stroke={color} strokeWidth={5} strokeLinecap="round" />
+      <circle cx={100} cy={200} r={6} fill="#f7c9a0" {...STROKE} strokeWidth={1.4} />
+      <circle cx={100} cy={200} r={2} fill="#e08f6a" />
+      <path d="M70 230 Q100 236 130 230" fill="none" stroke="#fbf7f2" strokeWidth={1.6} strokeDasharray="3 4" />
+    </g>
+  );
+}
+
+// `coy`: hands over her face, used for the private weight button.
+export default function Doll({ doll = DEFAULT_DOLL, health = 1, celebrate = false, coy = false, className }) {
   const d = { ...DEFAULT_DOLL, ...doll };
   const b = BEANIES[d.beanie] ?? BEANIES.panda;
   const h = Math.max(0, Math.min(1, health));
@@ -189,13 +263,16 @@ export default function Doll({ doll = DEFAULT_DOLL, health = 1, celebrate = fals
   const open = h >= 0.6 ? 1 : h < 0.15 ? 0 : 0.15 + ((h - 0.15) / 0.45) * 0.85;
   const smile = (h - 0.5) * 14;
   const uid = useId().replace(/:/g, '');
+  const arms = coy
+    ? 'M82 172 Q 66 160 74 132 M118 172 Q 134 160 126 132'
+    : 'M82 172 Q 70 192 68 210 M118 172 Q 130 192 134 210';
 
   return (
     <svg
-      viewBox="0 0 200 270"
+      viewBox={coy ? '30 14 140 176' : '0 0 200 270'}
       className={className}
       role="img"
-      aria-label={`Your doll is ${h > 0.8 ? 'happy' : h > 0.4 ? 'drooping a little' : 'wilting'}`}
+      aria-label={coy ? 'Your doll, hiding her face' : `Your doll is ${h > 0.8 ? 'happy' : h > 0.4 ? 'drooping a little' : 'wilting'}`}
       style={{ filter: `saturate(${0.35 + 0.65 * h})` }}
     >
       <defs>
@@ -218,19 +295,13 @@ export default function Doll({ doll = DEFAULT_DOLL, health = 1, celebrate = fals
         <ellipse cx={85} cy={256} rx={10} ry={5} fill="#3a2e30" {...STROKE} />
         <ellipse cx={115} cy={256} rx={10} ry={5} fill="#3a2e30" {...STROKE} />
 
-        {/* arms */}
-        <path d="M82 172 Q 70 192 68 210 M118 172 Q 130 192 134 210" stroke={INK} strokeWidth={11} strokeLinecap="round" fill="none" />
-        <path d="M82 172 Q 70 192 68 210 M118 172 Q 130 192 134 210" stroke={d.skin} strokeWidth={7.5} strokeLinecap="round" fill="none" />
+        {/* arms (raised to her face when coy) */}
+        <path d={arms} stroke={INK} strokeWidth={11} strokeLinecap="round" fill="none" />
+        <path d={arms} stroke={d.skin} strokeWidth={7.5} strokeLinecap="round" fill="none" />
 
-        {/* blouse + pinafore */}
-        <path d="M80 166 Q100 160 120 166 L 124 186 L 76 186 Z" fill="#fbf7f2" {...STROKE} />
-        <path d="M80 182 L120 182 L142 236 Q100 244 58 236 Z" fill={d.dress} {...STROKE} />
-        <path d="M84 182 L86 166 M116 182 L114 166" stroke={d.dress} strokeWidth={5} strokeLinecap="round" />
-        <circle cx={100} cy={200} r={6} fill="#f7c9a0" {...STROKE} strokeWidth={1.4} />
-        <circle cx={100} cy={200} r={2} fill="#e08f6a" />
-        <path d="M70 230 Q100 236 130 230" fill="none" stroke="#fbf7f2" strokeWidth={1.6} strokeDasharray="3 4" />
+        <Outfit kind={d.outfit} color={d.dress} />
 
-        <Flower health={h} />
+        {!coy && <Flower health={h} />}
 
         {/* head (tilts with sadness) */}
         <g transform={`rotate(${s * 14} 100 162)`}>
@@ -256,12 +327,41 @@ export default function Doll({ doll = DEFAULT_DOLL, health = 1, celebrate = fals
           <path d="M99 131 q2 2 0 3" fill="none" {...STROKE} strokeWidth={1.4} />
           <path d={`M93 ${143 - smile / 3} Q100 ${143 + smile} 107 ${143 - smile / 3}`} fill="none" {...STROKE} />
 
-          {h < 0.25 && (
+          {h < 0.25 && !coy && (
             <path d="M70 134 q-3 6 0 8 q3 -2 0 -8z" fill="#9cc3e6" {...STROKE} strokeWidth={1.2} />
           )}
 
+          {coy && (
+            <g>
+              <ellipse cx={64} cy={136} rx={11} ry={6} fill="#f19bb0" opacity={0.75} />
+              <ellipse cx={136} cy={136} rx={11} ry={6} fill="#f19bb0" opacity={0.75} />
+              {/* forearms rising from below the chin */}
+              <path d="M70 175 L 76 132 M130 175 L 124 132" stroke={INK} strokeWidth={13} strokeLinecap="round" />
+              <path d="M70 175 L 76 132 M130 175 L 124 132" stroke={d.skin} strokeWidth={9.5} strokeLinecap="round" />
+              {[78, 122].map((cx) => (
+                <g key={cx}>
+                  {/* four fingers fanned over each eye */}
+                  {[-9, -3, 3, 9].map((dx, i) => (
+                    <rect
+                      key={dx}
+                      x={cx + dx - 3.4}
+                      y={104 + Math.abs(dx) * 0.5}
+                      width={6.8}
+                      height={24 - (i === 0 || i === 3 ? 3 : 0)}
+                      rx={3.4}
+                      fill={d.skin}
+                      {...STROKE}
+                      strokeWidth={1.6}
+                    />
+                  ))}
+                  <path d={`M${cx - 13} 128 Q${cx} 140 ${cx + 13} 128 L${cx + 12} 122 L${cx - 12} 122 Z`} fill={d.skin} {...STROKE} strokeWidth={1.6} />
+                </g>
+              ))}
+            </g>
+          )}
+
           {/* beanie */}
-          <Ears kind={d.beanie} b={b} droop={s * 26} />
+          <Ears kind={b.ears} b={b} droop={s * 26} />
           <path d="M42 92 C 36 30, 164 30, 158 92 Q100 78 42 92 Z" fill={b.base} {...STROKE} />
           <path d="M42 92 Q100 78 158 92 L 158 98 Q100 84 42 98 Z" fill={b.base} {...STROKE} strokeWidth={1.8} />
           <path d="M60 52 q4 4 0 8 M140 52 q-4 4 0 8" stroke={INK} strokeWidth={1} opacity={0.35} fill="none" />

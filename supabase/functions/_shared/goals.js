@@ -7,7 +7,9 @@ const ACTIVITY = { sedentary: 1.2, light: 1.375, moderate: 1.55, active: 1.725 }
 const METS = {
   weights: { easy: 3.5, moderate: 5, hard: 6 },
   treadmill: { easy: 3.5, moderate: 7, hard: 9.8 },
-  dance: { easy: 4.5, moderate: 5.5, hard: 7.8 }
+  dance: { easy: 4.5, moderate: 5.5, hard: 7.8 },
+  yoga: { easy: 2.0, moderate: 3.0, hard: 4.0 },
+  walk: { easy: 2.8, moderate: 3.5, hard: 5.0 }
 };
 
 // Extra water for every minute of exercise (~350 ml per 30 min).

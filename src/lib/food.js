@@ -37,6 +37,7 @@ async function searchUsda(query, signal) {
       name: f.dataType === 'Branded' ? titleCase(f.description) : f.description,
       brand: f.brandName || f.brandOwner || null,
       source: 'USDA',
+      dataType: f.dataType,
       per100: {
         calories: usdaValue(n, N.kcal),
         protein: usdaValue(n, N.protein),
@@ -101,3 +102,101 @@ export function scaleNutrients(per100, grams) {
     fat: Math.round(per100.fat * f * 10) / 10
   };
 }
+
+const OZ = 28.3495;
+
+// Real-world measures for a food: cups, pieces, slices, servings, plus oz and grams.
+// USDA whole foods have household portions on their detail record; branded and
+// Open Food Facts items give a label serving size.
+export async function getPortions(food, signal) {
+  const out = [];
+  const add = (unit, grams) => {
+    unit = unit.replace(/\s+/g, ' ').trim();
+    if (grams > 0 && !out.some((p) => p.unit.toLowerCase() === unit.toLowerCase())) out.push({ unit, grams });
+  };
+
+  if (food.id.startsWith('usda-') && food.dataType !== 'Branded') {
+    try {
+      const res = await fetch(`https://api.nal.usda.gov/fdc/v1/food/${food.id.slice(5)}?api_key=${USDA_KEY}`, { signal });
+      if (res.ok) {
+        const json = await res.json();
+        for (const p of json.foodPortions ?? []) {
+          const amount = Number(p.amount) || 1;
+          const measure = p.measureUnit?.name && p.measureUnit.name !== 'undetermined' ? p.measureUnit.name : '';
+          let unit = p.portionDescription && p.portionDescription !== 'Quantity not specified'
+            ? p.portionDescription.replace(/^[\d./\s]+/, '')
+            : [measure, p.modifier].filter(Boolean).join(', ');
+          if (/^nlea serving$/i.test(unit)) unit = 'serving';
+          if (unit) add(unit, p.gramWeight / amount);
+        }
+      }
+    } catch (e) {
+      if (e.name === 'AbortError') throw e;
+    }
+  }
+  if (food.servingG) add(food.servingLabel ? `serving (${food.servingLabel})` : 'serving', food.servingG);
+  add('oz', OZ);
+  add('grams', 1);
+  return out;
+}
+
+export const AMOUNTS = [
+  ['¼', 0.25], ['½', 0.5], ['¾', 0.75], ['1', 1], ['1½', 1.5], ['2', 2], ['3', 3]
+];
+
+// Go-to ideas per nutrient: [what to show, what to search, why it helps].
+export const FOOD_IDEAS = {
+  protein: {
+    label: 'protein',
+    items: [
+      ['greek yogurt', 'greek yogurt plain nonfat', '~10 g per ½ cup'],
+      ['eggs', 'egg whole hard-boiled', '6 g each'],
+      ['chicken breast', 'chicken breast roasted', 'lean and filling'],
+      ['tofu', 'tofu firm', 'plant protein'],
+      ['lentils', 'lentils boiled', 'protein + fiber'],
+      ['cottage cheese', 'cottage cheese lowfat', '~14 g per ½ cup'],
+      ['salmon', 'salmon atlantic cooked', 'protein + omega-3'],
+      ['edamame', 'edamame frozen prepared', 'snackable'],
+      ['tuna', 'tuna canned water', 'quick and lean']
+    ]
+  },
+  fat: {
+    label: 'healthy fats',
+    items: [
+      ['avocado', 'avocados raw', 'monounsaturated fats'],
+      ['almonds', 'almonds', 'vitamin E + fiber'],
+      ['walnuts', 'walnuts english', 'plant omega-3'],
+      ['olive oil', 'olive oil', 'drizzle on anything'],
+      ['chia seeds', 'chia seeds dried', 'omega-3 + fiber'],
+      ['peanut butter', 'peanut butter smooth', 'easy on toast'],
+      ['salmon', 'salmon atlantic cooked', 'omega-3'],
+      ['dark chocolate', 'chocolate dark 70-85% cacao', 'a little treat'],
+      ['pumpkin seeds', 'pumpkin seeds roasted', 'magnesium']
+    ]
+  },
+  carbs: {
+    label: 'carbs',
+    items: [
+      ['oatmeal', 'oats cooked', 'slow, steady energy'],
+      ['banana', 'bananas raw', 'quick energy'],
+      ['sweet potato', 'sweet potato baked', 'fiber + vitamin A'],
+      ['brown rice', 'rice brown cooked', 'whole grain'],
+      ['quinoa', 'quinoa cooked', 'carbs + protein'],
+      ['berries', 'blueberries raw', 'antioxidants'],
+      ['whole wheat bread', 'bread whole wheat', 'easy base'],
+      ['apple', 'apples raw with skin', 'crunchy snack']
+    ]
+  },
+  calories: {
+    label: 'more energy',
+    items: [
+      ['trail mix', 'trail mix', 'dense, easy snack'],
+      ['granola', 'granola', 'with yogurt or milk'],
+      ['hummus', 'hummus', 'with veggies or pita'],
+      ['cheese', 'cheese cheddar', 'protein + fat'],
+      ['whole milk', 'milk whole', 'in a smoothie'],
+      ['mixed nuts', 'nuts mixed', 'a handful goes far'],
+      ['dried fruit', 'raisins', 'sweet energy']
+    ]
+  }
+};

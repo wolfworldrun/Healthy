@@ -5,7 +5,7 @@ import {
   buildTasks, calcGoals, dayFraction, dollHealth, mostBehind, sumTotals
 } from '../supabase/functions/_shared/goals.js';
 import Doll from './components/Doll.jsx';
-import { Arrow, Dancer, Dumbbell, Gear, INKS, Pen, SketchDefs, Treadmill } from './components/Icons.jsx';
+import { Arrow, Dancer, Dumbbell, Gear, INKS, Pen, SketchDefs, Treadmill, Walk, Yoga } from './components/Icons.jsx';
 import { DoneNote, TodoNote } from './components/PostIts.jsx';
 import JournalList from './components/JournalList.jsx';
 import LogSheet from './components/LogSheet.jsx';
@@ -13,6 +13,17 @@ import ExerciseSheet from './components/ExerciseSheet.jsx';
 import ClosetSheet from './components/ClosetSheet.jsx';
 import SettingsSheet from './components/SettingsSheet.jsx';
 import SignIn from './components/SignIn.jsx';
+import WeightSheet from './components/WeightSheet.jsx';
+
+const MOVES = [
+  ['weights', Dumbbell, 'weights'],
+  ['treadmill', Treadmill, 'treadmill'],
+  ['dance', Dancer, 'dance'],
+  ['yoga', Yoga, 'yoga'],
+  ['walk', Walk, 'walk']
+];
+
+const FOOD_KEYS = ['calories', 'protein', 'carbs', 'fat'];
 
 const MOODS = {
   water: 'a little thirsty...',
@@ -158,10 +169,13 @@ function Today({ userId }) {
     }
   };
 
+  // Which food idea list to open on: whatever food goal is furthest behind.
+  const foodFocus = mostBehind(tasks.filter((t) => FOOD_KEYS.includes(t.key)), expected)?.key;
+
   const onTask = (t) => {
     if (t.key === 'water') setSheet({ type: 'log', tab: 'water' });
-    else if (t.key === 'move') toast('tap the dumbbell, treadmill, or dancer below ↓');
-    else setSheet({ type: 'log', tab: 'food' });
+    else if (t.key === 'move') toast('tap one of the activities under your doll ↓');
+    else setSheet({ type: 'log', tab: 'food', focus: t.key });
   };
 
   if (!profile) return <main className="page" />;
@@ -202,14 +216,23 @@ function Today({ userId }) {
             ink={ink}
             onPick={(c) => {
               setInk(c);
-              setSheet({ type: 'log', tab: 'food' });
+              setSheet({ type: 'log', tab: 'food', focus: foodFocus });
             }}
           />
           <span className="hint">pick an ink to write</span>
         </div>
       </div>
 
-      <JournalList logs={logs} units={units} onDelete={remove} />
+      <JournalList
+        logs={logs}
+        units={units}
+        onDelete={remove}
+        aside={
+          <button className="coy-btn" onClick={() => setSheet({ type: 'weight' })} aria-label="Private weight log">
+            <Doll doll={profile.doll} coy />
+          </button>
+        }
+      />
 
       <section className="doll-zone" aria-label="Your doll">
         <button className="doll-btn" onClick={() => setSheet({ type: 'closet' })} aria-label="Customize your doll">
@@ -217,23 +240,25 @@ function Today({ userId }) {
         </button>
         <div className="doll-mood">{mood}</div>
         <div className="moves">
-          <button className="move" onClick={() => setSheet({ type: 'exercise', kind: 'weights' })}>
-            <Dumbbell />
-            weights
-          </button>
-          <button className="move" onClick={() => setSheet({ type: 'exercise', kind: 'treadmill' })}>
-            <Treadmill />
-            treadmill
-          </button>
-          <button className="move" onClick={() => setSheet({ type: 'exercise', kind: 'dance' })}>
-            <Dancer />
-            dance
-          </button>
+          {MOVES.map(([kind, Icon, label]) => (
+            <button key={kind} className="move" onClick={() => setSheet({ type: 'exercise', kind })}>
+              <Icon />
+              {label}
+            </button>
+          ))}
         </div>
       </section>
 
       {sheet?.type === 'log' && (
-        <LogSheet tab={sheet.tab} ink={ink} setInk={setInk} units={units} onAdd={add} onClose={() => setSheet(null)} />
+        <LogSheet
+          tab={sheet.tab}
+          focus={sheet.focus}
+          ink={ink}
+          setInk={setInk}
+          units={units}
+          onAdd={add}
+          onClose={() => setSheet(null)}
+        />
       )}
       {sheet?.type === 'exercise' && (
         <ExerciseSheet
@@ -247,6 +272,15 @@ function Today({ userId }) {
       )}
       {sheet?.type === 'closet' && (
         <ClosetSheet doll={profile.doll} onSave={(doll) => save({ ...profile, doll })} onClose={() => setSheet(null)} />
+      )}
+      {sheet?.type === 'weight' && (
+        <WeightSheet
+          profile={profile}
+          day={day}
+          onLogged={(kg) => save({ ...profile, weight_kg: kg }, true)}
+          onClose={() => setSheet(null)}
+          toast={toast}
+        />
       )}
       {sheet?.type === 'settings' && (
         <SettingsSheet
