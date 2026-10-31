@@ -53,7 +53,7 @@ To redeploy the function after editing it: `npx supabase functions deploy send-r
 
 ## 5. Host it
 
-Live at **https://healthy-journal.vercel.app** (Vercel project `nutrient-journal`, built from the `main` branch of `wolfworldrun/Healthy`). The project already has the three `VITE_…` variables. `nutrient-journal.vercel.app` also still serves the same app.
+Live at **https://healthy-journal.vercel.app** (Vercel project `nutrient-journal`, built from the `main` branch of `wolfworldrun/Healthy`). The project already has the three `VITE_…` variables. `nutrient-journal.vercel.app` also still serves the same app. Every push to `main` deploys automatically.
 
 ## 6. Put it on your phone
 
