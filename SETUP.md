@@ -36,7 +36,7 @@ Without a `.env` file the app runs in **demo mode** and saves to the browser onl
 2. **Credentials → Create credentials → OAuth client ID** → *Web application*.
    - Authorized redirect URI: `https://YOUR-PROJECT.supabase.co/auth/v1/callback`
 3. In Supabase: **Authentication → Sign In / Providers → Google** → paste the client ID and secret, then enable it.
-4. **Authentication → URL Configuration**: set the Site URL to your hosted URL (step 5), and add `http://localhost:5173` under Redirect URLs for local testing.
+4. **Authentication → URL Configuration**: set the Site URL to `https://healthy-journal.vercel.app`, and add both `https://healthy-journal.vercel.app` and `http://localhost:5173` under Redirect URLs.
 
 ## 3. Food search key
 
@@ -53,7 +53,7 @@ To redeploy the function after editing it: `npx supabase functions deploy send-r
 
 ## 5. Host it
 
-Push this folder to GitHub, then import it into Vercel or Netlify (build command `npm run build`, output folder `dist`). The Vercel project `nutrient-journal` already has the three `VITE_…` variables set.
+Live at **https://healthy-journal.vercel.app** (Vercel project `nutrient-journal`, built from the `main` branch of `wolfworldrun/Healthy`). The project already has the three `VITE_…` variables. `nutrient-journal.vercel.app` also still serves the same app.
 
 ## 6. Put it on your phone
 
