@@ -189,6 +189,41 @@ function Eye({ cx, cy, iris, open, id }) {
   );
 }
 
+// Knocked-out spiral eye.
+function SpiralEye({ cx, cy }) {
+  return (
+    <path
+      d={`M${cx} ${cy} m0 -1 a1.5 1.5 0 1 1 -1.5 1.5 a4 4 0 1 1 4 4 a7 7 0 1 1 -7 -7 a10 10 0 1 1 10 10`}
+      fill="none"
+      {...STROKE}
+      strokeWidth={1.8}
+    />
+  );
+}
+
+// Little bluebirds circling her head.
+function Birds() {
+  const bird = (angle, color) => (
+    <g transform={`rotate(${angle} 100 66) translate(100 8)`}>
+      <g transform={`rotate(${-angle}) scale(1.4)`}>
+        <ellipse cx={0} cy={0} rx={7} ry={5.5} fill={color} {...STROKE} strokeWidth={1.4} />
+        <path d="M-2 -1 q-6 -9 -11 -3 q6 1 7 6" fill={color} {...STROKE} strokeWidth={1.3} />
+        <circle cx={3} cy={-1.5} r={1.1} fill={INK} />
+        <path d="M6.5 0 l4 1 l-4 1.4" fill="#f2c879" {...STROKE} strokeWidth={1} />
+      </g>
+    </g>
+  );
+  return (
+    <g>
+      <animateTransform attributeName="transform" type="rotate" from="0 100 66" to="360 100 66" dur="1.8s" repeatCount="indefinite" />
+      {bird(0, '#9cc3e6')}
+      {bird(120, '#f6a5b8')}
+      {bird(240, '#f2c879')}
+      <path d="M34 60 l2 -5 l2 5 l-5 -3 h6z M162 78 l2 -5 l2 5 l-5 -3 h6z" fill="#f6d36b" {...STROKE} strokeWidth={1} />
+    </g>
+  );
+}
+
 function Flower({ health }) {
   // Stem tip swings from upright (healthy) to drooping (wilted).
   const s = 1 - health;
@@ -255,7 +290,8 @@ function Outfit({ kind, color }) {
 }
 
 // `coy`: hands over her face, used for the private weight button.
-export default function Doll({ doll = DEFAULT_DOLL, health = 1, celebrate = false, coy = false, className }) {
+// `dazed`: knocked out, with spiral eyes and birds circling her head.
+export default function Doll({ doll = DEFAULT_DOLL, health = 1, celebrate = false, coy = false, dazed = false, className }) {
   const d = { ...DEFAULT_DOLL, ...doll };
   const b = BEANIES[d.beanie] ?? BEANIES.panda;
   const h = Math.max(0, Math.min(1, health));
@@ -319,15 +355,28 @@ export default function Doll({ doll = DEFAULT_DOLL, health = 1, celebrate = fals
             {...STROKE}
           />
 
-          <Eye cx={78} cy={118} iris={d.eyes} open={open} id={`${uid}l`} />
-          <Eye cx={122} cy={118} iris={d.eyes} open={open} id={`${uid}r`} />
+          {dazed ? (
+            <>
+              <SpiralEye cx={78} cy={118} />
+              <SpiralEye cx={122} cy={118} />
+            </>
+          ) : (
+            <>
+              <Eye cx={78} cy={118} iris={d.eyes} open={open} id={`${uid}l`} />
+              <Eye cx={122} cy={118} iris={d.eyes} open={open} id={`${uid}r`} />
+            </>
+          )}
 
           <ellipse cx={64} cy={136} rx={9} ry={5} fill="#f4a6b4" opacity={0.2 + 0.5 * h} />
           <ellipse cx={136} cy={136} rx={9} ry={5} fill="#f4a6b4" opacity={0.2 + 0.5 * h} />
           <path d="M99 131 q2 2 0 3" fill="none" {...STROKE} strokeWidth={1.4} />
-          <path d={`M93 ${143 - smile / 3} Q100 ${143 + smile} 107 ${143 - smile / 3}`} fill="none" {...STROKE} />
+          {dazed ? (
+            <ellipse cx={100} cy={144} rx={4} ry={5} fill="#c9707f" {...STROKE} strokeWidth={1.6} />
+          ) : (
+            <path d={`M93 ${143 - smile / 3} Q100 ${143 + smile} 107 ${143 - smile / 3}`} fill="none" {...STROKE} />
+          )}
 
-          {h < 0.25 && !coy && (
+          {h < 0.25 && !coy && !dazed && (
             <path d="M70 134 q-3 6 0 8 q3 -2 0 -8z" fill="#9cc3e6" {...STROKE} strokeWidth={1.2} />
           )}
 
@@ -366,6 +415,7 @@ export default function Doll({ doll = DEFAULT_DOLL, health = 1, celebrate = fals
           <path d="M42 92 Q100 78 158 92 L 158 98 Q100 84 42 98 Z" fill={b.base} {...STROKE} strokeWidth={1.8} />
           <path d="M60 52 q4 4 0 8 M140 52 q-4 4 0 8" stroke={INK} strokeWidth={1} opacity={0.35} fill="none" />
           <BeanieFace kind={b.face} b={b} />
+          {dazed && <Birds />}
         </g>
       </g>
 

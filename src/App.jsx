@@ -1,11 +1,11 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { isDemo, supabase } from './lib/supabase.js';
 import { addEntry, deleteEntry, loadDay, loadProfile, saveProfile, todayKey } from './lib/store.js';
 import {
   buildTasks, calcGoals, dayFraction, dollHealth, mostBehind, sumTotals
 } from '../supabase/functions/_shared/goals.js';
 import Doll from './components/Doll.jsx';
-import { Arrow, Dancer, Dumbbell, Gear, INKS, Pen, SketchDefs, Treadmill, Walk, Yoga } from './components/Icons.jsx';
+import { Arrow, Dancer, Dumbbell, Gear, Hanger, INKS, Pen, SketchDefs, Treadmill, Walk, Yoga } from './components/Icons.jsx';
 import { DoneNote, TodoNote } from './components/PostIts.jsx';
 import JournalList from './components/JournalList.jsx';
 import LogSheet from './components/LogSheet.jsx';
@@ -74,6 +74,8 @@ function Today({ userId }) {
   const [sheet, setSheet] = useState(null);
   const [toastMsg, setToastMsg] = useState('');
   const [now, setNow] = useState(() => new Date());
+  const [tumble, setTumble] = useState(null); // null | 'fall' | 'ko'
+  const pokes = useRef({ count: 0, last: 0 });
 
   const toast = useCallback((msg) => {
     setToastMsg(msg);
@@ -178,6 +180,23 @@ function Today({ userId }) {
     else setSheet({ type: 'log', tab: 'food', focus: t.key });
   };
 
+  // Tap her and she topples over; the third tap in a row knocks her out for a moment.
+  const poke = () => {
+    if (tumble) return;
+    const p = pokes.current;
+    const t = Date.now();
+    p.count = t - p.last > 20_000 ? 1 : p.count + 1;
+    p.last = t;
+    if (p.count >= 3) {
+      p.count = 0;
+      setTumble('ko');
+      setTimeout(() => setTumble(null), 4600);
+    } else {
+      setTumble('fall');
+      setTimeout(() => setTumble(null), 1400);
+    }
+  };
+
   if (!profile) return <main className="page" />;
 
   const [y, m, d] = day.split('-').map(Number);
@@ -235,10 +254,19 @@ function Today({ userId }) {
       />
 
       <section className="doll-zone" aria-label="Your doll">
-        <button className="doll-btn" onClick={() => setSheet({ type: 'closet' })} aria-label="Customize your doll">
-          <Doll doll={profile.doll} health={health} celebrate={allDone} className="doll-svg" />
+        <button className="icon-btn closet-btn" onClick={() => setSheet({ type: 'closet' })} aria-label="Dress her up">
+          <Hanger />
         </button>
-        <div className="doll-mood">{mood}</div>
+        <button className={`doll-btn ${tumble ?? ''}`} onClick={poke} aria-label="Poke your doll">
+          <Doll
+            doll={profile.doll}
+            health={tumble ? 1 : health}
+            celebrate={allDone && !tumble}
+            dazed={tumble === 'ko'}
+            className="doll-svg"
+          />
+        </button>
+        <div className="doll-mood">{tumble === 'ko' ? 'seeing birds...' : tumble === 'fall' ? 'oof!' : mood}</div>
         <div className="moves">
           {MOVES.map(([kind, Icon, label]) => (
             <button key={kind} className="move" onClick={() => setSheet({ type: 'exercise', kind })}>

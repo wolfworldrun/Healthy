@@ -116,6 +116,15 @@ export const Walk = () => (
   </svg>
 );
 
+export const Hanger = () => (
+  <svg width="30" height="30" viewBox="0 0 30 30" filter="url(#wobble)" aria-hidden="true">
+    <g {...S} strokeWidth={1.8}>
+      <path d="M15 9 q0 -4 3 -4 q3 0 3 3 q0 2 -3 3.5 L15 13" />
+      <path d="M15 13 L3 22 Q2 24 4 24 L26 24 Q28 24 27 22 Z" fill="#f9d3d9" />
+    </g>
+  </svg>
+);
+
 export const Gear = () => (
   <svg width="30" height="30" viewBox="0 0 30 30" filter="url(#wobble)" aria-hidden="true">
     <g {...S}>
