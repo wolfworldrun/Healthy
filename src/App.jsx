@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { isDemo, supabase } from './lib/supabase.js';
+import { isDemo, recoveryLanding, supabase } from './lib/supabase.js';
 import { addEntry, deleteEntry, loadDay, loadProfile, saveProfile, todayKey } from './lib/store.js';
 import {
   buildTasks, calcGoals, dayFraction, dollHealth, mostBehind, sumTotals
@@ -12,7 +12,7 @@ import LogSheet from './components/LogSheet.jsx';
 import ExerciseSheet from './components/ExerciseSheet.jsx';
 import ClosetSheet from './components/ClosetSheet.jsx';
 import SettingsSheet from './components/SettingsSheet.jsx';
-import SignIn from './components/SignIn.jsx';
+import SignIn, { NewPassword } from './components/SignIn.jsx';
 import WeightSheet from './components/WeightSheet.jsx';
 
 const MOVES = [
@@ -49,14 +49,26 @@ function shiftDay(day, delta) {
 
 export default function App() {
   const [session, setSession] = useState(isDemo ? { user: { id: 'demo' } } : undefined);
+  const [recovering, setRecovering] = useState(recoveryLanding);
 
   useEffect(() => {
     if (isDemo) return;
     supabase.auth.getSession().then(({ data }) => setSession(data.session));
-    const { data } = supabase.auth.onAuthStateChange((_event, s) => setSession(s));
+    const { data } = supabase.auth.onAuthStateChange((event, s) => {
+      if (event === 'PASSWORD_RECOVERY') setRecovering(true);
+      setSession(s);
+    });
     return () => data.subscription.unsubscribe();
   }, []);
 
+  if (recovering) {
+    return (
+      <>
+        <SketchDefs />
+        <NewPassword onDone={() => setRecovering(false)} />
+      </>
+    );
+  }
   if (session === undefined) return <SketchDefs />;
   return (
     <>

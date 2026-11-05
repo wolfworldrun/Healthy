@@ -38,6 +38,15 @@ Without a `.env` file the app runs in **demo mode** and saves to the browser onl
 3. In Supabase: **Authentication → Sign In / Providers → Google** → paste the client ID and secret, then enable it.
 4. **Authentication → URL Configuration**: set the Site URL to `https://healthy-journal.vercel.app`, and add both `https://healthy-journal.vercel.app` and `http://localhost:5173` under Redirect URLs.
 
+## 2b. Username + password accounts
+
+Deployed as the `username-auth` function (`--no-verify-jwt`; it does its own checks), with `0005_username_accounts.sql`.
+
+- **Authentication → Sign In / Providers → Email:** turn off **Confirm email** so testers get in right away. Anyone can then sign up with an email they don't own, so turn it back on (with custom SMTP) before a public launch.
+- **Authentication → Emails → SMTP Settings:** add a custom SMTP sender (Brevo works with a verified Gmail address; Resend needs a domain). Supabase's built-in sender is limited to a few emails an hour and officially only team members' addresses, so password resets won't reliably reach testers without this.
+
+Reset emails use the implicit flow on purpose, so the link works even when it opens in Safari instead of the home-screen app.
+
 ## 3. Food search key
 
 Get a free key at https://fdc.nal.usda.gov/api-key-signup and put it in `VITE_USDA_API_KEY`. (`DEMO_KEY` works but only allows about 30 searches an hour.)

@@ -402,3 +402,15 @@ html, body { overflow-x: hidden; }
   95% { transform: rotate(5deg); }
   100% { transform: rotate(0); }
 }
+
+.signin .doll-svg { width: 120px; }
+.signin h1 { font-size: 46px; }
+.auth-form { width: 100%; max-width: 320px; text-align: left; display: grid; gap: 10px; }
+.auth-form label { display: block; }
+.auth-form .hint { display: block; font-size: 14px; line-height: 1.2; color: var(--ink-soft); }
+.auth-form .btn { width: 100%; margin-top: 6px; }
+.auth-msg { margin: 0; font-size: 16px; line-height: 1.25; }
+.auth-msg.bad { color: #b4475d; }
+.link-btn { background: none; border: none; padding: 0; color: var(--ink); text-decoration: underline; font-size: 17px; }
+.auth-links { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.auth-or { color: var(--ink-soft); font-size: 15px; }
