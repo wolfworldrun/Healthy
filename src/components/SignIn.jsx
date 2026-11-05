@@ -148,7 +148,7 @@ function ForgotForm({ onBack }) {
   );
 }
 
-export default function SignIn() {
+export default function SignIn({ onTry }) {
   const [mode, setMode] = useState('signin');
   const [confirming, setConfirming] = useState('');
   const [googleError, setGoogleError] = useState('');
@@ -174,7 +174,9 @@ export default function SignIn() {
     <main className="page signin">
       <h1>my little journal</h1>
       <p>water, food, and moving my body</p>
-      <Doll health={1} className="doll-svg" />
+      <Doll health={1} waving className="doll-svg" />
+      <button type="button" className="btn try-me" onClick={onTry}>try me</button>
+      <span className="muted try-hint">peek inside with sample data. no account needed.</span>
       {confirming ? (
         <ConfirmEmail email={confirming} onBack={() => { setConfirming(''); setMode('signin'); }} />
       ) : (

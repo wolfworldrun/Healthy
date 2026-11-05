@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { isDemo, recoveryLanding, supabase } from './lib/supabase.js';
-import { addEntry, deleteEntry, loadDay, loadProfile, saveProfile, saveWins, todayKey } from './lib/store.js';
+import { isDemo, recoveryLanding, setDemo, supabase } from './lib/supabase.js';
+import {
+  addEntry, clearDemo, deleteEntry, loadDay, loadProfile, saveProfile, saveWins, seedDemo, todayKey
+} from './lib/store.js';
+import { sampleData } from './lib/demoData.js';
 import {
   buildTasks, calcGoals, dayFraction, dollHealth, mostBehind, sumTotals
 } from '../supabase/functions/_shared/goals.js';
@@ -56,6 +59,19 @@ function shiftDay(day, delta) {
 export default function App() {
   const [session, setSession] = useState(isDemo ? { user: { id: 'demo' } } : undefined);
   const [recovering, setRecovering] = useState(recoveryLanding);
+  const [trying, setTrying] = useState(false);
+
+  const startTrying = () => {
+    setDemo(true);
+    seedDemo(sampleData());
+    setTrying(true);
+  };
+
+  const stopTrying = () => {
+    clearDemo();
+    setDemo(false);
+    setTrying(false);
+  };
 
   useEffect(() => {
     if (isDemo) return;
@@ -76,15 +92,23 @@ export default function App() {
     );
   }
   if (session === undefined) return <SketchDefs />;
+  if (trying) {
+    return (
+      <>
+        <SketchDefs />
+        <Today userId="demo" onExitDemo={stopTrying} />
+      </>
+    );
+  }
   return (
     <>
       <SketchDefs />
-      {session ? <Today userId={session.user.id} /> : <SignIn />}
+      {session ? <Today userId={session.user.id} /> : <SignIn onTry={startTrying} />}
     </>
   );
 }
 
-function Today({ userId }) {
+function Today({ userId, onExitDemo }) {
   const [profile, setProfile] = useState(null);
   const [day, setDay] = useState(todayKey());
   const [logs, setLogs] = useState({ food: [], water: [], exercise: [] });
@@ -256,7 +280,14 @@ function Today({ userId }) {
         </button>
       </header>
 
-      {isDemo && <p className="muted" style={{ margin: 0, fontSize: 15 }}>demo mode: saved on this device only</p>}
+      {onExitDemo ? (
+        <div className="demo-bar">
+          <span>you're trying it out with sample data. nothing is kept.</span>
+          <button className="btn primary" onClick={onExitDemo}>join</button>
+        </div>
+      ) : (
+        isDemo && <p className="muted" style={{ margin: 0, fontSize: 15 }}>demo mode: saved on this device only</p>
+      )}
 
       <nav className="page-nav" aria-label="More pages">
         <button className="chip" onClick={() => setSheet({ type: 'week' })}>my week</button>
@@ -369,7 +400,7 @@ function Today({ userId }) {
           profile={profile}
           firstRun={sheet.firstRun}
           onSave={save}
-          onSignOut={() => supabase?.auth.signOut()}
+          onSignOut={onExitDemo ?? (() => supabase?.auth.signOut())}
           onClose={() => setSheet(null)}
           toast={toast}
         />

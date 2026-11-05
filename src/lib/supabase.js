@@ -16,4 +16,9 @@ export const supabase =
         auth: { flowType: recoveryLanding ? 'implicit' : 'pkce', detectSessionInUrl: true, persistSession: true }
       })
     : null;
-export const isDemo = !supabase;
+export let isDemo = !supabase;
+
+// "Try me" from the sign-in page: run on sample data in this browser, with no account.
+export function setDemo(on) {
+  isDemo = on || !supabase;
+}

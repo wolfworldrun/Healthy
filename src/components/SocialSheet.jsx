@@ -3,7 +3,6 @@ import Sheet from './Sheet.jsx';
 import Doll from './Doll.jsx';
 import { Strike } from './Icons.jsx';
 import { clearWins, loadFeed, todayKey } from '../lib/store.js';
-import { isDemo } from '../lib/supabase.js';
 
 const WINS = {
   water: 'drank my water',
@@ -49,7 +48,7 @@ export default function SocialSheet({ profile, ink, onSave, onClose, toast }) {
   const joined = !!profile.share_social;
 
   useEffect(() => {
-    if (!joined || isDemo) return;
+    if (!joined) return;
     loadFeed().then(setFeed).catch((e) => toast(e.message));
   }, [joined, toast]);
 
@@ -67,10 +66,9 @@ export default function SocialSheet({ profile, ink, onSave, onClose, toast }) {
           if you join, other members can see your first name ({(profile.display_name || 'you').split(' ')[0]}), your doll,
           and which goals you crossed off. they never see your food, amounts, or weight. you can leave anytime.
         </p>
-        <button className="btn primary" onClick={() => onSave({ ...profile, share_social: true }, true)} disabled={isDemo}>
+        <button className="btn primary" onClick={() => onSave({ ...profile, share_social: true }, true)}>
           join in
         </button>
-        {isDemo && <p className="muted">friends needs a real account.</p>}
       </Sheet>
     );
   }

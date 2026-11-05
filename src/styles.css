@@ -381,141 +381,255 @@ html, body { overflow-x: hidden; }
 .doll-svg { overflow: visible; }
 .doll-btn .doll-svg { transform-origin: 50% 96%; }
 .doll-zone { overflow-x: clip; }
-.doll-btn.fall .doll-svg { animation: topple 1.9s both; will-change: transform; }
-.doll-btn.ko .doll-svg { animation: knockout 5.2s both; will-change: transform; }
+.doll-btn.fall .doll-svg, .doll-btn.ko .doll-svg { will-change: transform; }
 
 /* Each joint pivots where it attaches, in the doll's own drawing coordinates. */
-.d-head, .d-hair, .d-arm-l, .d-arm-r { transform-box: view-box; }
+.d-head, .d-hair, .d-arm-l, .d-arm-r, .d-wave, .d-torso, .d-leg-l, .d-leg-r { transform-box: view-box; }
 .d-head { transform-origin: 100px 162px; }
 .d-hair { transform-origin: 100px 110px; }
 .d-arm-l { transform-origin: 82px 172px; }
-.d-arm-r { transform-origin: 118px 172px; }
-.doll-btn.fall .d-head { animation: head-fall 1.9s both; }
-.doll-btn.fall .d-hair { animation: hair-fall 1.9s both; }
-.doll-btn.fall .d-arm-l { animation: arm-l-fall 1.9s both; }
-.doll-btn.fall .d-arm-r { animation: arm-r-fall 1.9s both; }
-.doll-btn.ko .d-head { animation: head-ko 5.2s both; }
-.doll-btn.ko .d-hair { animation: hair-ko 5.2s both; }
-.doll-btn.ko .d-arm-l { animation: arm-l-ko 5.2s both; }
-.doll-btn.ko .d-arm-r { animation: arm-r-ko 5.2s both; }
+.d-arm-r, .d-wave { transform-origin: 118px 172px; }
+.d-torso { transform-origin: 100px 166px; }
+.d-leg-l { transform-origin: 88px 205px; }
+.d-leg-r { transform-origin: 112px 205px; }
+.d-wave { animation: wave 1.1s ease-in-out infinite alternate; }
+@keyframes wave { from { transform: rotate(-9deg); } to { transform: rotate(11deg); } }
 
-/* Whole body: lean back, gravity pulls her over, two shrinking bounces, then she pushes back up. */
-@keyframes topple {
-  0% { transform: rotate(0); animation-timing-function: ease-out; }
-  9% { transform: rotate(5deg); animation-timing-function: cubic-bezier(0.5, 0, 0.9, 0.5); }
-  27% { transform: translate(118px, -46px) rotate(-90deg) scale(0.86, 0.82); animation-timing-function: ease-out; }
-  33% { transform: translate(118px, -46px) rotate(-82deg) scale(0.85); animation-timing-function: ease-in; }
-  39% { transform: translate(118px, -46px) rotate(-90deg) scale(0.855, 0.835); animation-timing-function: ease-out; }
-  43% { transform: translate(118px, -46px) rotate(-87deg) scale(0.85); animation-timing-function: ease-in; }
-  47% { transform: translate(118px, -46px) rotate(-90deg) scale(0.85); }
-  68% { transform: translate(118px, -46px) rotate(-90deg) scale(0.85); animation-timing-function: cubic-bezier(0.3, 0, 0.3, 1); }
-  90% { transform: rotate(4deg); animation-timing-function: ease-in-out; }
-  100% { transform: rotate(0); }
+/* Knocked backward: a jolt, up and away from us (she shrinks), then down onto her butt with
+   her legs out, two small bounces, and back up. A knockout just stays down longer, slumped. */
+.doll-btn.fall .doll-svg { animation: fall-root 1.9s both; }
+@keyframes fall-root {
+  0% { transform: none; animation-timing-function: ease-out; }
+  6% { transform: translateY(-4px) scale(1.03); animation-timing-function: ease-out; }
+  20% { transform: translateY(-44px) scale(0.86); animation-timing-function: cubic-bezier(0.5, 0, 1, 0.7); }
+  31% { transform: translateY(0) scale(0.92, 0.86); animation-timing-function: ease-out; }
+  38% { transform: translateY(-12px) scale(0.89); animation-timing-function: ease-in; }
+  45% { transform: translateY(0) scale(0.9, 0.87); animation-timing-function: ease-out; }
+  50% { transform: scale(0.89); animation-timing-function: linear; }
+  70% { transform: scale(0.89); animation-timing-function: cubic-bezier(0.3, 0, 0.3, 1); }
+  90% { transform: translateY(-6px) scale(1.01); animation-timing-function: ease-in-out; }
+  100% { transform: none; }
 }
-@keyframes head-fall {
-  0% { transform: rotate(0); }
-  9% { transform: rotate(-5deg); }
-  25% { transform: rotate(16deg); }
-  29% { transform: rotate(-9deg); }
-  35% { transform: rotate(6deg); }
-  41% { transform: rotate(-3deg); }
-  48%, 68% { transform: rotate(0); }
-  84% { transform: rotate(16deg); }
-  93% { transform: rotate(-5deg); }
-  100% { transform: rotate(0); }
+.doll-btn.fall .d-sit { animation: fall-sit 1.9s both; }
+@keyframes fall-sit {
+  0% { transform: translateY(0px); animation-timing-function: ease-out; }
+  6% { transform: translateY(0px); animation-timing-function: ease-out; }
+  20% { transform: translateY(6px); animation-timing-function: cubic-bezier(0.5, 0, 1, 0.7); }
+  31% { transform: translateY(30px); animation-timing-function: ease-out; }
+  38% { transform: translateY(26px); animation-timing-function: ease-in; }
+  45% { transform: translateY(30px); animation-timing-function: ease-out; }
+  50% { transform: translateY(30px); animation-timing-function: linear; }
+  70% { transform: translateY(30px); animation-timing-function: cubic-bezier(0.3, 0, 0.3, 1); }
+  90% { transform: translateY(0px); animation-timing-function: ease-in-out; }
+  100% { transform: translateY(0px); }
 }
-@keyframes hair-fall {
-  0%, 9% { transform: rotate(0); }
-  25% { transform: rotate(9deg); }
-  31% { transform: rotate(-6deg); }
-  39% { transform: rotate(3deg); }
-  48%, 68% { transform: rotate(0); }
-  84% { transform: rotate(8deg); }
-  100% { transform: rotate(0); }
+.doll-btn.fall .d-torso { animation: fall-torso 1.9s both; }
+@keyframes fall-torso {
+  0% { transform: scaleY(1); animation-timing-function: ease-out; }
+  6% { transform: scaleY(1); animation-timing-function: ease-out; }
+  20% { transform: scaleY(0.95); animation-timing-function: cubic-bezier(0.5, 0, 1, 0.7); }
+  31% { transform: scaleY(0.76); animation-timing-function: ease-out; }
+  38% { transform: scaleY(0.82); animation-timing-function: ease-in; }
+  45% { transform: scaleY(0.78); animation-timing-function: ease-out; }
+  50% { transform: scaleY(0.8); animation-timing-function: linear; }
+  70% { transform: scaleY(0.8); animation-timing-function: cubic-bezier(0.3, 0, 0.3, 1); }
+  90% { transform: scaleY(1); animation-timing-function: ease-in-out; }
+  100% { transform: scaleY(1); }
 }
-@keyframes arm-l-fall {
-  0% { transform: rotate(0); }
-  9% { transform: rotate(35deg); }
-  25% { transform: rotate(125deg); }
-  31% { transform: rotate(55deg); }
-  37% { transform: rotate(80deg); }
-  46%, 68% { transform: rotate(35deg); }
-  80% { transform: rotate(-20deg); }
-  92% { transform: rotate(12deg); }
-  100% { transform: rotate(0); }
+.doll-btn.fall .d-leg-l { animation: fall-leg-l 1.9s both; }
+@keyframes fall-leg-l {
+  0% { transform: rotate(0deg) scaleY(1); animation-timing-function: ease-out; }
+  6% { transform: rotate(-8deg) scaleY(1); animation-timing-function: ease-out; }
+  20% { transform: rotate(40deg) scaleY(0.6); animation-timing-function: cubic-bezier(0.5, 0, 1, 0.7); }
+  31% { transform: rotate(68deg) scaleY(0.95); animation-timing-function: ease-out; }
+  38% { transform: rotate(58deg) scaleY(0.9); animation-timing-function: ease-in; }
+  45% { transform: rotate(65deg) scaleY(0.95); animation-timing-function: ease-out; }
+  50% { transform: rotate(62deg) scaleY(0.92); animation-timing-function: linear; }
+  70% { transform: rotate(62deg) scaleY(0.92); animation-timing-function: cubic-bezier(0.3, 0, 0.3, 1); }
+  90% { transform: rotate(-4deg) scaleY(1); animation-timing-function: ease-in-out; }
+  100% { transform: rotate(0deg) scaleY(1); }
 }
-@keyframes arm-r-fall {
-  0% { transform: rotate(0); }
-  9% { transform: rotate(-25deg); }
-  25% { transform: rotate(-110deg); }
-  31% { transform: rotate(-45deg); }
-  37% { transform: rotate(-70deg); }
-  46%, 68% { transform: rotate(-25deg); }
-  80% { transform: rotate(15deg); }
-  92% { transform: rotate(-10deg); }
-  100% { transform: rotate(0); }
+.doll-btn.fall .d-leg-r { animation: fall-leg-r 1.9s both; }
+@keyframes fall-leg-r {
+  0% { transform: rotate(0deg) scaleY(1); animation-timing-function: ease-out; }
+  6% { transform: rotate(8deg) scaleY(1); animation-timing-function: ease-out; }
+  20% { transform: rotate(-40deg) scaleY(0.6); animation-timing-function: cubic-bezier(0.5, 0, 1, 0.7); }
+  31% { transform: rotate(-68deg) scaleY(0.95); animation-timing-function: ease-out; }
+  38% { transform: rotate(-58deg) scaleY(0.9); animation-timing-function: ease-in; }
+  45% { transform: rotate(-65deg) scaleY(0.95); animation-timing-function: ease-out; }
+  50% { transform: rotate(-62deg) scaleY(0.92); animation-timing-function: linear; }
+  70% { transform: rotate(-62deg) scaleY(0.92); animation-timing-function: cubic-bezier(0.3, 0, 0.3, 1); }
+  90% { transform: rotate(4deg) scaleY(1); animation-timing-function: ease-in-out; }
+  100% { transform: rotate(0deg) scaleY(1); }
 }
-
-/* Knocked out: a harder fall, lying still and dizzy, then a slow, wobbly climb back up. */
-@keyframes knockout {
-  0% { transform: rotate(0); animation-timing-function: ease-out; }
-  4% { transform: rotate(6deg); animation-timing-function: cubic-bezier(0.5, 0, 0.9, 0.5); }
-  11% { transform: translate(118px, -46px) rotate(-90deg) scale(0.87, 0.81); animation-timing-function: ease-out; }
-  14% { transform: translate(118px, -46px) rotate(-81deg) scale(0.85); animation-timing-function: ease-in; }
-  17% { transform: translate(118px, -46px) rotate(-90deg) scale(0.855, 0.835); animation-timing-function: ease-out; }
-  19% { transform: translate(118px, -46px) rotate(-87deg) scale(0.85); animation-timing-function: ease-in; }
-  21% { transform: translate(118px, -46px) rotate(-90deg) scale(0.85); }
-  76% { transform: translate(118px, -46px) rotate(-90deg) scale(0.85); animation-timing-function: ease-in-out; }
-  84% { transform: translateX(84px) rotate(-58deg) scale(0.89); animation-timing-function: ease-in-out; }
-  88% { transform: translateX(78px) rotate(-52deg) scale(0.9); animation-timing-function: cubic-bezier(0.3, 0, 0.3, 1); }
-  95% { transform: rotate(5deg); animation-timing-function: ease-in-out; }
-  98% { transform: rotate(-2deg); }
-  100% { transform: rotate(0); }
+.doll-btn.fall .d-arm-l { animation: fall-arm-l 1.9s both; }
+@keyframes fall-arm-l {
+  0% { transform: rotate(0deg); animation-timing-function: ease-out; }
+  6% { transform: rotate(20deg); animation-timing-function: ease-out; }
+  20% { transform: rotate(140deg); animation-timing-function: cubic-bezier(0.5, 0, 1, 0.7); }
+  31% { transform: rotate(50deg); animation-timing-function: ease-out; }
+  38% { transform: rotate(75deg); animation-timing-function: ease-in; }
+  45% { transform: rotate(38deg); animation-timing-function: ease-out; }
+  50% { transform: rotate(42deg); animation-timing-function: linear; }
+  70% { transform: rotate(42deg); animation-timing-function: cubic-bezier(0.3, 0, 0.3, 1); }
+  90% { transform: rotate(-15deg); animation-timing-function: ease-in-out; }
+  100% { transform: rotate(0deg); }
 }
-@keyframes head-ko {
-  0% { transform: rotate(0); }
-  4% { transform: rotate(-6deg); }
-  10% { transform: rotate(18deg); }
-  12% { transform: rotate(-11deg); }
-  15% { transform: rotate(7deg); }
-  18% { transform: rotate(-3deg); }
-  22%, 76% { transform: rotate(0); }
-  84% { transform: rotate(18deg); }
-  90% { transform: rotate(-8deg); }
-  94% { transform: rotate(7deg); }
-  98% { transform: rotate(-3deg); }
-  100% { transform: rotate(0); }
+.doll-btn.fall .d-arm-r { animation: fall-arm-r 1.9s both; }
+@keyframes fall-arm-r {
+  0% { transform: rotate(0deg); animation-timing-function: ease-out; }
+  6% { transform: rotate(-18deg); animation-timing-function: ease-out; }
+  20% { transform: rotate(-125deg); animation-timing-function: cubic-bezier(0.5, 0, 1, 0.7); }
+  31% { transform: rotate(-45deg); animation-timing-function: ease-out; }
+  38% { transform: rotate(-68deg); animation-timing-function: ease-in; }
+  45% { transform: rotate(-32deg); animation-timing-function: ease-out; }
+  50% { transform: rotate(-38deg); animation-timing-function: linear; }
+  70% { transform: rotate(-38deg); animation-timing-function: cubic-bezier(0.3, 0, 0.3, 1); }
+  90% { transform: rotate(13deg); animation-timing-function: ease-in-out; }
+  100% { transform: rotate(0deg); }
 }
-@keyframes hair-ko {
-  0%, 4% { transform: rotate(0); }
-  10% { transform: rotate(9deg); }
-  13% { transform: rotate(-6deg); }
-  17% { transform: rotate(3deg); }
-  22%, 76% { transform: rotate(0); }
-  84% { transform: rotate(8deg); }
-  100% { transform: rotate(0); }
+.doll-btn.fall .d-head { animation: fall-head 1.9s both; }
+@keyframes fall-head {
+  0% { transform: none; animation-timing-function: ease-out; }
+  6% { transform: rotate(-3deg); animation-timing-function: ease-out; }
+  20% { transform: translateY(-4px); animation-timing-function: cubic-bezier(0.5, 0, 1, 0.7); }
+  31% { transform: rotate(6deg) translateY(5px); animation-timing-function: ease-out; }
+  38% { transform: rotate(-3deg); animation-timing-function: ease-in; }
+  45% { transform: rotate(2deg); animation-timing-function: ease-out; }
+  50% { transform: rotate(3deg); animation-timing-function: linear; }
+  70% { transform: rotate(3deg); animation-timing-function: cubic-bezier(0.3, 0, 0.3, 1); }
+  90% { transform: rotate(-4deg); animation-timing-function: ease-in-out; }
+  100% { transform: none; }
 }
-@keyframes arm-l-ko {
-  0% { transform: rotate(0); }
-  4% { transform: rotate(40deg); }
-  10% { transform: rotate(135deg); }
-  13% { transform: rotate(60deg); }
-  16% { transform: rotate(85deg); }
-  21%, 76% { transform: rotate(45deg); }
-  84% { transform: rotate(-25deg); }
-  93% { transform: rotate(14deg); }
-  100% { transform: rotate(0); }
+.doll-btn.fall .d-hair { animation: fall-hair 1.9s both; }
+@keyframes fall-hair {
+  0% { transform: translateY(0px) scaleY(1); animation-timing-function: ease-out; }
+  6% { transform: translateY(0px) scaleY(1); animation-timing-function: ease-out; }
+  20% { transform: translateY(-8px) scaleY(1); animation-timing-function: cubic-bezier(0.5, 0, 1, 0.7); }
+  31% { transform: translateY(6px) scaleY(0.82); animation-timing-function: ease-out; }
+  38% { transform: translateY(-3px) scaleY(0.92); animation-timing-function: ease-in; }
+  45% { transform: translateY(2px) scaleY(0.86); animation-timing-function: ease-out; }
+  50% { transform: translateY(0px) scaleY(0.88); animation-timing-function: linear; }
+  70% { transform: translateY(0px) scaleY(0.88); animation-timing-function: cubic-bezier(0.3, 0, 0.3, 1); }
+  90% { transform: translateY(-3px) scaleY(1); animation-timing-function: ease-in-out; }
+  100% { transform: translateY(0px) scaleY(1); }
 }
-@keyframes arm-r-ko {
-  0% { transform: rotate(0); }
-  4% { transform: rotate(-30deg); }
-  10% { transform: rotate(-120deg); }
-  13% { transform: rotate(-50deg); }
-  16% { transform: rotate(-75deg); }
-  21%, 76% { transform: rotate(-30deg); }
-  84% { transform: rotate(20deg); }
-  93% { transform: rotate(-12deg); }
-  100% { transform: rotate(0); }
+.doll-btn.ko .doll-svg { animation: ko-root 5.2s both; }
+@keyframes ko-root {
+  0% { transform: none; animation-timing-function: ease-out; }
+  3% { transform: translateY(-4px) scale(1.03); animation-timing-function: ease-out; }
+  10% { transform: translateY(-44px) scale(0.86); animation-timing-function: cubic-bezier(0.5, 0, 1, 0.7); }
+  16% { transform: translateY(0) scale(0.92, 0.86); animation-timing-function: ease-out; }
+  20% { transform: translateY(-12px) scale(0.89); animation-timing-function: ease-in; }
+  24% { transform: translateY(0) scale(0.9, 0.87); animation-timing-function: ease-out; }
+  27% { transform: scale(0.89); animation-timing-function: linear; }
+  78% { transform: scale(0.89); animation-timing-function: cubic-bezier(0.3, 0, 0.3, 1); }
+  93% { transform: translateY(-6px) scale(1.01); animation-timing-function: ease-in-out; }
+  100% { transform: none; }
+}
+.doll-btn.ko .d-sit { animation: ko-sit 5.2s both; }
+@keyframes ko-sit {
+  0% { transform: translateY(0px); animation-timing-function: ease-out; }
+  3% { transform: translateY(0px); animation-timing-function: ease-out; }
+  10% { transform: translateY(6px); animation-timing-function: cubic-bezier(0.5, 0, 1, 0.7); }
+  16% { transform: translateY(30px); animation-timing-function: ease-out; }
+  20% { transform: translateY(26px); animation-timing-function: ease-in; }
+  24% { transform: translateY(30px); animation-timing-function: ease-out; }
+  27% { transform: translateY(30px); animation-timing-function: linear; }
+  78% { transform: translateY(30px); animation-timing-function: cubic-bezier(0.3, 0, 0.3, 1); }
+  93% { transform: translateY(0px); animation-timing-function: ease-in-out; }
+  100% { transform: translateY(0px); }
+}
+.doll-btn.ko .d-torso { animation: ko-torso 5.2s both; }
+@keyframes ko-torso {
+  0% { transform: scaleY(1); animation-timing-function: ease-out; }
+  3% { transform: scaleY(1); animation-timing-function: ease-out; }
+  10% { transform: scaleY(0.95); animation-timing-function: cubic-bezier(0.5, 0, 1, 0.7); }
+  16% { transform: scaleY(0.76); animation-timing-function: ease-out; }
+  20% { transform: scaleY(0.82); animation-timing-function: ease-in; }
+  24% { transform: scaleY(0.78); animation-timing-function: ease-out; }
+  27% { transform: scaleY(0.8); animation-timing-function: linear; }
+  78% { transform: scaleY(0.8); animation-timing-function: cubic-bezier(0.3, 0, 0.3, 1); }
+  93% { transform: scaleY(1); animation-timing-function: ease-in-out; }
+  100% { transform: scaleY(1); }
+}
+.doll-btn.ko .d-leg-l { animation: ko-leg-l 5.2s both; }
+@keyframes ko-leg-l {
+  0% { transform: rotate(0deg) scaleY(1); animation-timing-function: ease-out; }
+  3% { transform: rotate(-8deg) scaleY(1); animation-timing-function: ease-out; }
+  10% { transform: rotate(40deg) scaleY(0.6); animation-timing-function: cubic-bezier(0.5, 0, 1, 0.7); }
+  16% { transform: rotate(68deg) scaleY(0.95); animation-timing-function: ease-out; }
+  20% { transform: rotate(58deg) scaleY(0.9); animation-timing-function: ease-in; }
+  24% { transform: rotate(65deg) scaleY(0.95); animation-timing-function: ease-out; }
+  27% { transform: rotate(62deg) scaleY(0.92); animation-timing-function: linear; }
+  78% { transform: rotate(62deg) scaleY(0.92); animation-timing-function: cubic-bezier(0.3, 0, 0.3, 1); }
+  93% { transform: rotate(-4deg) scaleY(1); animation-timing-function: ease-in-out; }
+  100% { transform: rotate(0deg) scaleY(1); }
+}
+.doll-btn.ko .d-leg-r { animation: ko-leg-r 5.2s both; }
+@keyframes ko-leg-r {
+  0% { transform: rotate(0deg) scaleY(1); animation-timing-function: ease-out; }
+  3% { transform: rotate(8deg) scaleY(1); animation-timing-function: ease-out; }
+  10% { transform: rotate(-40deg) scaleY(0.6); animation-timing-function: cubic-bezier(0.5, 0, 1, 0.7); }
+  16% { transform: rotate(-68deg) scaleY(0.95); animation-timing-function: ease-out; }
+  20% { transform: rotate(-58deg) scaleY(0.9); animation-timing-function: ease-in; }
+  24% { transform: rotate(-65deg) scaleY(0.95); animation-timing-function: ease-out; }
+  27% { transform: rotate(-62deg) scaleY(0.92); animation-timing-function: linear; }
+  78% { transform: rotate(-62deg) scaleY(0.92); animation-timing-function: cubic-bezier(0.3, 0, 0.3, 1); }
+  93% { transform: rotate(4deg) scaleY(1); animation-timing-function: ease-in-out; }
+  100% { transform: rotate(0deg) scaleY(1); }
+}
+.doll-btn.ko .d-arm-l { animation: ko-arm-l 5.2s both; }
+@keyframes ko-arm-l {
+  0% { transform: rotate(0deg); animation-timing-function: ease-out; }
+  3% { transform: rotate(25deg); animation-timing-function: ease-out; }
+  10% { transform: rotate(150deg); animation-timing-function: cubic-bezier(0.5, 0, 1, 0.7); }
+  16% { transform: rotate(40deg); animation-timing-function: ease-out; }
+  20% { transform: rotate(60deg); animation-timing-function: ease-in; }
+  24% { transform: rotate(22deg); animation-timing-function: ease-out; }
+  27% { transform: rotate(18deg); animation-timing-function: linear; }
+  78% { transform: rotate(18deg); animation-timing-function: cubic-bezier(0.3, 0, 0.3, 1); }
+  93% { transform: rotate(-15deg); animation-timing-function: ease-in-out; }
+  100% { transform: rotate(0deg); }
+}
+.doll-btn.ko .d-arm-r { animation: ko-arm-r 5.2s both; }
+@keyframes ko-arm-r {
+  0% { transform: rotate(0deg); animation-timing-function: ease-out; }
+  3% { transform: rotate(-22deg); animation-timing-function: ease-out; }
+  10% { transform: rotate(-135deg); animation-timing-function: cubic-bezier(0.5, 0, 1, 0.7); }
+  16% { transform: rotate(-35deg); animation-timing-function: ease-out; }
+  20% { transform: rotate(-55deg); animation-timing-function: ease-in; }
+  24% { transform: rotate(-18deg); animation-timing-function: ease-out; }
+  27% { transform: rotate(-14deg); animation-timing-function: linear; }
+  78% { transform: rotate(-14deg); animation-timing-function: cubic-bezier(0.3, 0, 0.3, 1); }
+  93% { transform: rotate(13deg); animation-timing-function: ease-in-out; }
+  100% { transform: rotate(0deg); }
+}
+.doll-btn.ko .d-head { animation: ko-head 5.2s both; }
+@keyframes ko-head {
+  0% { transform: none; animation-timing-function: ease-out; }
+  3% { transform: rotate(-3deg); animation-timing-function: ease-out; }
+  10% { transform: translateY(-5px); animation-timing-function: cubic-bezier(0.5, 0, 1, 0.7); }
+  16% { transform: rotate(10deg) translateY(6px); animation-timing-function: ease-out; }
+  20% { transform: rotate(-4deg); animation-timing-function: ease-in; }
+  24% { transform: rotate(8deg) translateY(3px); animation-timing-function: ease-out; }
+  27% { transform: rotate(13deg) translateY(4px); animation-timing-function: linear; }
+  78% { transform: rotate(13deg) translateY(4px); animation-timing-function: cubic-bezier(0.3, 0, 0.3, 1); }
+  93% { transform: rotate(-5deg); animation-timing-function: ease-in-out; }
+  100% { transform: none; }
+}
+.doll-btn.ko .d-hair { animation: ko-hair 5.2s both; }
+@keyframes ko-hair {
+  0% { transform: translateY(0px) scaleY(1); animation-timing-function: ease-out; }
+  3% { transform: translateY(0px) scaleY(1); animation-timing-function: ease-out; }
+  10% { transform: translateY(-8px) scaleY(1); animation-timing-function: cubic-bezier(0.5, 0, 1, 0.7); }
+  16% { transform: translateY(6px) scaleY(0.82); animation-timing-function: ease-out; }
+  20% { transform: translateY(-3px) scaleY(0.92); animation-timing-function: ease-in; }
+  24% { transform: translateY(2px) scaleY(0.86); animation-timing-function: ease-out; }
+  27% { transform: translateY(0px) scaleY(0.88); animation-timing-function: linear; }
+  78% { transform: translateY(0px) scaleY(0.88); animation-timing-function: cubic-bezier(0.3, 0, 0.3, 1); }
+  93% { transform: translateY(-3px) scaleY(1); animation-timing-function: ease-in-out; }
+  100% { transform: translateY(0px) scaleY(1); }
 }
 
 .signin .doll-svg { width: 120px; }
@@ -554,3 +668,8 @@ html, body { overflow-x: hidden; }
 .friend-none { margin: 0; font-size: 15px; line-height: 1.3; }
 .friend ul { list-style: none; padding: 0; margin: 0; line-height: 1.5; }
 .photo-note { font-size: 14px; line-height: 1.2; }
+
+.demo-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0 0 6px; font-size: 15px; line-height: 1.2; color: var(--ink-soft); }
+.demo-bar .btn { flex: none; font-size: 15px; padding: 3px 10px; }
+.try-me { width: 100%; max-width: 320px; font-size: 22px; background: var(--note-yellow); }
+.try-hint { font-size: 15px; margin-top: -4px; }

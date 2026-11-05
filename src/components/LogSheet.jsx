@@ -3,6 +3,7 @@ import Sheet, { InkPicker } from './Sheet.jsx';
 import { AMOUNTS, FOOD_IDEAS, getPortions, searchFoods, scaleNutrients } from '../lib/food.js';
 import { ML_PER_OZ, waterChoices } from '../lib/units.js';
 import { PhotoButton, PhotoReview } from './PhotoScan.jsx';
+import { PHOTO_SCAN_ENABLED } from '../lib/photo.js';
 
 export default function LogSheet({ tab: initialTab, focus, ink, setInk, units, onAdd, onClose }) {
   const [tab, setTab] = useState(initialTab || 'food');
@@ -120,7 +121,7 @@ function FoodTab({ ink, focus, onAdd }) {
 
   return (
     <>
-      <PhotoButton onResult={setScanned} />
+      {PHOTO_SCAN_ENABLED && <PhotoButton onResult={setScanned} />}
       <label>
         what did you eat?
         <input

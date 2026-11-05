@@ -9,6 +9,9 @@ export function todayKey(d = new Date()) {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
 }
 
+// Local storage names the demo uses, so "try me" can start clean and tidy up after itself.
+const DEMO_KEYS = ['profile', 'logs', 'feed', 'wins'];
+
 const demo = {
   read(name, fallback) {
     try {
@@ -25,6 +28,21 @@ const demo = {
     }
   }
 };
+
+export function seedDemo({ profile, logs, feed }) {
+  demo.write('profile', profile);
+  demo.write('logs', logs);
+  demo.write('feed', feed);
+  demo.write('wins', []);
+}
+
+export function clearDemo() {
+  try {
+    DEMO_KEYS.forEach((k) => localStorage.removeItem(`nj-${k}`));
+  } catch {
+    /* nothing was saved then */
+  }
+}
 
 export async function loadProfile(userId) {
   if (isDemo) return demo.read('profile', { id: 'demo', display_name: 'you', doll: {} });
@@ -105,20 +123,31 @@ export async function loadRange(from, to) {
 
 // Friends page: goal keys only, shared solely while the person has opted in.
 export async function saveWins(day, done) {
-  if (isDemo) return;
+  if (isDemo) {
+    demo.write('wins', done);
+    return;
+  }
   const { error } = await supabase.from('daily_wins').upsert({ day, done, updated_at: new Date().toISOString() });
   if (error) throw error;
 }
 
 export async function clearWins() {
-  if (isDemo) return;
+  if (isDemo) {
+    demo.write('wins', []);
+    return;
+  }
   const { data: { user } } = await supabase.auth.getUser();
   const { error } = await supabase.from('daily_wins').delete().eq('user_id', user.id);
   if (error) throw error;
 }
 
 export async function loadFeed() {
-  if (isDemo) return [];
+  if (isDemo) {
+    const me = demo.read('profile', {});
+    const done = demo.read('wins', []);
+    const self = { is_me: true, name: (me.display_name || 'you').split(' ')[0], doll: me.doll, day: todayKey(), done };
+    return [self, ...demo.read('feed', [])];
+  }
   const { data, error } = await supabase.rpc('social_feed');
   if (error) throw error;
   return data;

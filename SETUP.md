@@ -49,6 +49,8 @@ Reset emails use the implicit flow on purpose, so the link works even when it op
 
 ## 2c. Food photo scanning
 
+**Currently off** (`PHOTO_SCAN_ENABLED` in `src/lib/photo.js`), because each scan costs money. To turn it on:
+
 The `food-photo` function (`--no-verify-jwt`; it checks the user's login itself) sends a shrunken photo to Claude and returns estimates the user approves. Photos aren't stored, and each person gets 20 scans a day.
 
 Create a key at https://console.anthropic.com (billed separately from a Claude subscription), then add it under **Edge Functions → Secrets** in Supabase as `ANTHROPIC_API_KEY`. The app says "photo scanning isn't set up yet" until then.

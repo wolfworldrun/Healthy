@@ -1,6 +1,9 @@
 // Sends a shrunken copy of a meal photo to the food-photo function.
 import { isDemo, supabase, supabaseKey, supabaseUrl } from './supabase.js';
 
+// Off: each scan costs money on the Anthropic API. The code stays so it can be switched back on.
+export const PHOTO_SCAN_ENABLED = false;
+
 const MAX_SIDE = 1280;
 
 function shrink(file) {

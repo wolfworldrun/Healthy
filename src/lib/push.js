@@ -22,7 +22,7 @@ export function pushSupport() {
     if (ios && !standalone) return 'Add this page to your Home Screen first, then open it from there.';
     return 'This browser does not support push notifications.';
   }
-  if (isDemo) return 'Connect Supabase to turn on reminders.';
+  if (isDemo) return 'Create an account to turn on reminders.';
   return null;
 }
 

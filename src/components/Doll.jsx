@@ -247,14 +247,33 @@ function Flower({ health }) {
   );
 }
 
-function Outfit({ kind, color }) {
+// One leg and shoe, plus the pant leg if the outfit has one. Pivots at the hip so she can sit.
+function Leg({ side, skin, outfit, color }) {
+  const left = side === 'l';
+  const x = left ? 88 : 112;
+  const pants = {
+    tee: left ? 'M76 198 L100 198 L98 252 L68 252 Q70 224 76 198 Z' : 'M100 198 L124 198 Q130 224 132 252 L102 252 Z',
+    overalls: left ? 'M74 200 L100 200 L98 250 L70 250 Q71 224 74 200 Z' : 'M100 200 L126 200 Q129 224 130 250 L102 250 Z'
+  }[outfit];
+  return (
+    <g className={`d-leg-${side}`}>
+      <path d={`M${x} 232 L${x} 252`} stroke={INK} strokeWidth={10} strokeLinecap="round" />
+      <path d={`M${x} 232 L${x} 252`} stroke={skin} strokeWidth={6.5} strokeLinecap="round" />
+      <ellipse cx={left ? 85 : 115} cy={256} rx={10} ry={5} fill="#3a2e30" {...STROKE} />
+      {pants && <path d={pants} fill={outfit === 'tee' ? '#e6d9c6' : color} {...STROKE} />}
+      {outfit === 'tee' && <path d={left ? 'M84 236 l2 14' : 'M116 236 l-2 14'} stroke={INK} strokeWidth={1} opacity={0.4} />}
+      {outfit === 'overalls' && (
+        <path d={left ? 'M71 242 L98 242' : 'M102 242 L129 242'} stroke="#fbf7f2" strokeWidth={1.4} strokeDasharray="3 3" />
+      )}
+    </g>
+  );
+}
+
+function Torso({ kind, color }) {
   if (kind === 'tee') {
-    // Baggy cream pants with a tee in the chosen color.
+    // A tee in the chosen color, over baggy cream pants.
     return (
       <g>
-        <path d="M76 198 L100 198 L98 252 L68 252 Q70 224 76 198 Z" fill="#e6d9c6" {...STROKE} />
-        <path d="M100 198 L124 198 Q130 224 132 252 L102 252 Z" fill="#e6d9c6" {...STROKE} />
-        <path d="M84 236 l2 14 M116 236 l-2 14" stroke={INK} strokeWidth={1} opacity={0.4} />
         <path d="M78 166 Q100 160 122 166 L 126 202 Q100 206 74 202 Z" fill={color} {...STROKE} />
         <path d="M80 168 L68 186 L78 191 L86 176 Z M120 168 L132 186 L122 191 L114 176 Z" fill={color} {...STROKE} strokeWidth={1.8} />
         <path d="M92 166 Q100 172 108 166" fill="none" {...STROKE} strokeWidth={1.4} />
@@ -267,13 +286,10 @@ function Outfit({ kind, color }) {
         <path d="M78 166 Q100 160 122 166 L 124 192 L 76 192 Z" fill="#fbf7f2" {...STROKE} />
         <path d="M80 168 L70 184 L78 188 L86 175 Z M120 168 L130 184 L122 188 L114 175 Z" fill="#fbf7f2" {...STROKE} strokeWidth={1.6} />
         <path d="M84 178 L116 178 L120 202 L80 202 Z" fill={color} {...STROKE} />
-        <path d="M74 200 L100 200 L98 250 L70 250 Q71 224 74 200 Z" fill={color} {...STROKE} />
-        <path d="M100 200 L126 200 Q129 224 130 250 L102 250 Z" fill={color} {...STROKE} />
         <path d="M86 178 L84 166 M114 178 L116 166" stroke={color} strokeWidth={5} strokeLinecap="round" />
         <circle cx={86} cy={180} r={2.2} fill="#f2c879" {...STROKE} strokeWidth={1} />
         <circle cx={114} cy={180} r={2.2} fill="#f2c879" {...STROKE} strokeWidth={1} />
         <rect x={93} y={186} width={14} height={9} rx={1.5} fill="none" {...STROKE} strokeWidth={1.2} />
-        <path d="M71 242 L98 242 M102 242 L129 242" stroke="#fbf7f2" strokeWidth={1.4} strokeDasharray="3 3" />
       </g>
     );
   }
@@ -291,7 +307,8 @@ function Outfit({ kind, color }) {
 
 // `coy`: hands over her face, used for the private weight button.
 // `dazed`: knocked out, with spiral eyes and birds circling her head.
-export default function Doll({ doll = DEFAULT_DOLL, health = 1, celebrate = false, coy = false, dazed = false, moving = false, className }) {
+// `waving`: one arm up, saying hi on the sign-in page.
+export default function Doll({ doll = DEFAULT_DOLL, health = 1, celebrate = false, coy = false, dazed = false, moving = false, waving = false, className }) {
   const d = { ...DEFAULT_DOLL, ...doll };
   const b = BEANIES[d.beanie] ?? BEANIES.panda;
   const h = Math.max(0, Math.min(1, health));
@@ -301,7 +318,8 @@ export default function Doll({ doll = DEFAULT_DOLL, health = 1, celebrate = fals
   const uid = useId().replace(/:/g, '');
   const arms = coy
     ? ['M82 172 Q 66 160 74 132', 'M118 172 Q 134 160 126 132']
-    : ['M82 172 Q 70 192 68 210', 'M118 172 Q 130 192 134 210'];
+    : ['M82 172 Q 70 192 68 210', waving ? 'M118 172 Q 150 168 172 134' : 'M118 172 Q 130 192 134 210'];
+  const animated = moving || waving;
 
   return (
     <svg
@@ -309,7 +327,7 @@ export default function Doll({ doll = DEFAULT_DOLL, health = 1, celebrate = fals
       className={className}
       role="img"
       aria-label={coy ? 'Your doll, hiding her face' : `Your doll is ${h > 0.8 ? 'happy' : h > 0.4 ? 'drooping a little' : 'wilting'}`}
-      style={moving ? undefined : { filter: `saturate(${0.35 + 0.65 * h})` }}
+      style={animated ? undefined : { filter: `saturate(${0.35 + 0.65 * h})` }}
     >
       <defs>
         <filter id="sketch">
@@ -322,29 +340,30 @@ export default function Doll({ doll = DEFAULT_DOLL, health = 1, celebrate = fals
       <ellipse cx={100} cy={262} rx={58 + s * 6} ry={5} fill={INK} opacity={0.12} />
 
       {/* The wobble filter re-renders every frame, so it's dropped while she's animating. */}
-      <g filter={moving ? undefined : 'url(#sketch)'} transform={`translate(0 ${s * 6})`}>
+      <g filter={animated ? undefined : 'url(#sketch)'} transform={`translate(0 ${s * 6})`}>
+        <g className="d-sit">
         {/* back hair */}
         <g className="d-hair">
           <path d="M44 100 C 26 160, 30 208, 50 226 L 150 226 C 170 208, 174 160, 156 100 Z" fill={d.hair} {...STROKE} />
         </g>
 
         {/* legs + shoes */}
-        <path d="M88 232 L88 252 M112 232 L112 252" stroke={INK} strokeWidth={10} strokeLinecap="round" />
-        <path d="M88 232 L88 252 M112 232 L112 252" stroke={d.skin} strokeWidth={6.5} strokeLinecap="round" />
-        <ellipse cx={85} cy={256} rx={10} ry={5} fill="#3a2e30" {...STROKE} />
-        <ellipse cx={115} cy={256} rx={10} ry={5} fill="#3a2e30" {...STROKE} />
+        <Leg side="l" skin={d.skin} outfit={d.outfit} color={d.dress} />
+        <Leg side="r" skin={d.skin} outfit={d.outfit} color={d.dress} />
 
         {/* arms (raised to her face when coy) */}
         {arms.map((arm, i) => (
-          <g key={arm} className={i ? 'd-arm-r' : 'd-arm-l'}>
+          <g key={arm} className={i ? (waving ? 'd-wave' : 'd-arm-r') : 'd-arm-l'}>
             <path d={arm} stroke={INK} strokeWidth={11} strokeLinecap="round" fill="none" />
             <path d={arm} stroke={d.skin} strokeWidth={7.5} strokeLinecap="round" fill="none" />
           </g>
         ))}
 
-        <Outfit kind={d.outfit} color={d.dress} />
+        <g className="d-torso">
+          <Torso kind={d.outfit} color={d.dress} />
+        </g>
 
-        {!coy && (
+        {!coy && !waving && (
           <g className="d-arm-r">
             <Flower health={h} />
           </g>
@@ -428,6 +447,7 @@ export default function Doll({ doll = DEFAULT_DOLL, health = 1, celebrate = fals
           <path d="M60 52 q4 4 0 8 M140 52 q-4 4 0 8" stroke={INK} strokeWidth={1} opacity={0.35} fill="none" />
           <BeanieFace kind={b.face} b={b} />
           {dazed && <Birds />}
+        </g>
         </g>
         </g>
       </g>
