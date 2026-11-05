@@ -39,7 +39,7 @@ function SignInForm({ onCreate, onForgot, initialError, notice }) {
     <form className="auth-form" onSubmit={run(() => signInWithLogin(login, password))}>
       {notice && <p className="auth-msg" role="status">{notice}</p>}
       <label>
-        username
+        username or email
         <input className="field" value={login} onChange={(e) => setLogin(e.target.value)} autoComplete="username" autoCapitalize="none" autoCorrect="off" required />
       </label>
       <label>

@@ -41,7 +41,7 @@ export async function createAccount({ username, password, firstName, email }) {
     }
   });
   if (error) {
-    if (error.code === 'user_already_exists') throw new Error('that email already has an account. try signing in or resetting your password');
+    if (error.code === 'user_already_exists') throw new Error('that email already has an account. if you used google before, tap sign in with google below, or use forgot my password to add a password');
     if (error.code === 'weak_password') throw new Error('please pick a stronger password');
     if (error.code === 'email_address_invalid') throw new Error("that email doesn't look right");
     if (error.code === 'email_address_not_authorized' || error.code === 'over_email_send_rate_limit') {
@@ -55,7 +55,7 @@ export async function createAccount({ username, password, firstName, email }) {
   }
   // With confirmation on, Supabase hides existing emails by returning a user with no identities.
   if (data.user && data.user.identities?.length === 0) {
-    throw new Error('that email already has an account. try signing in or resetting your password');
+    throw new Error('that email already has an account. if you used google before, tap sign in with google below, or use forgot my password to add a password');
   }
   return !!data.session;
 }
