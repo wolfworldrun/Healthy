@@ -37,7 +37,7 @@ export async function createAccount({ username, password, firstName, email }) {
     password,
     options: {
       data: { username: cleanUsername(username), first_name: firstName.trim() },
-      emailRedirectTo: window.location.origin
+      emailRedirectTo: `${window.location.origin}/?confirmed=1`
     }
   });
   if (error) {
@@ -58,6 +58,15 @@ export async function createAccount({ username, password, firstName, email }) {
     throw new Error('that email already has an account. try signing in or resetting your password');
   }
   return !!data.session;
+}
+
+export async function resendConfirmation(email) {
+  const { error } = await supabase.auth.resend({
+    type: 'signup',
+    email,
+    options: { emailRedirectTo: `${window.location.origin}/?confirmed=1` }
+  });
+  if (error) throw new Error('please wait a minute, then try again');
 }
 
 // Implicit flow on purpose: a PKCE link only works in the browser that asked for it, and on iPhone

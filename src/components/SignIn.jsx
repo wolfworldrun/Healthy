@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase.js';
 import {
-  MIN_PASSWORD, USERNAME_RE, cleanUsername, createAccount, requestReset, setNewPassword, signInWithLogin, usernameAvailable
+  MIN_PASSWORD, USERNAME_RE, cleanUsername, createAccount, requestReset, resendConfirmation, setNewPassword,
+  signInWithLogin, usernameAvailable
 } from '../lib/auth.js';
 import Doll from './Doll.jsx';
 import { GoogleG } from './Icons.jsx';
@@ -30,12 +31,13 @@ function useSubmit(initialError = '') {
   return { error, setError, busy, run };
 }
 
-function SignInForm({ onCreate, onForgot, initialError }) {
+function SignInForm({ onCreate, onForgot, initialError, notice }) {
   const [login, setLogin] = useState('');
   const [password, setPassword] = useState('');
   const { error, busy, run } = useSubmit(initialError);
   return (
     <form className="auth-form" onSubmit={run(() => signInWithLogin(login, password))}>
+      {notice && <p className="auth-msg" role="status">{notice}</p>}
       <label>
         username
         <input className="field" value={login} onChange={(e) => setLogin(e.target.value)} autoComplete="username" autoCapitalize="none" autoCorrect="off" required />
@@ -97,6 +99,29 @@ function CreateForm({ onBack, onConfirmEmail }) {
   );
 }
 
+// Waiting on the confirmation email, with a way to ask for it again.
+function ConfirmEmail({ email, onBack }) {
+  const [resent, setResent] = useState(false);
+  const { error, busy, run } = useSubmit();
+  return (
+    <form
+      className="auth-form"
+      onSubmit={run(async () => {
+        await resendConfirmation(email);
+        setResent(true);
+      })}
+    >
+      <p className="auth-msg" role="status">almost there! we sent a link to {email}. tap it, then come back here and sign in. check your spam folder too.</p>
+      {resent && <p className="auth-msg" role="status">sent another one.</p>}
+      {error && <p className="auth-msg bad" role="alert">{error}</p>}
+      <button className="btn" disabled={busy}>{busy ? 'sending...' : 'send it again'}</button>
+      <div className="auth-links">
+        <button type="button" className="link-btn" onClick={onBack}>back to sign in</button>
+      </div>
+    </form>
+  );
+}
+
 function ForgotForm({ onBack }) {
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
@@ -127,6 +152,15 @@ export default function SignIn() {
   const [mode, setMode] = useState('signin');
   const [confirming, setConfirming] = useState('');
   const [googleError, setGoogleError] = useState('');
+  // The confirmation link often opens in a different browser than the one that signed up,
+  // so it can't sign them in automatically; say what happened instead.
+  const [notice] = useState(() =>
+    new URLSearchParams(window.location.search).has('confirmed') && !linkError() ? "you're confirmed! sign in below." : ''
+  );
+
+  useEffect(() => {
+    if (notice) window.history.replaceState(null, '', window.location.pathname);
+  }, [notice]);
 
   const google = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
@@ -142,16 +176,11 @@ export default function SignIn() {
       <p>water, food, and moving my body</p>
       <Doll health={1} className="doll-svg" />
       {confirming ? (
-        <div className="auth-form">
-          <p className="auth-msg" role="status">almost there! we sent a link to {confirming}. tap it, then come back and sign in.</p>
-          <div className="auth-links">
-            <button type="button" className="link-btn" onClick={() => { setConfirming(''); setMode('signin'); }}>back to sign in</button>
-          </div>
-        </div>
+        <ConfirmEmail email={confirming} onBack={() => { setConfirming(''); setMode('signin'); }} />
       ) : (
         <>
           {mode === 'signin' && (
-            <SignInForm onCreate={() => setMode('create')} onForgot={() => setMode('forgot')} initialError={linkError()} />
+            <SignInForm onCreate={() => setMode('create')} onForgot={() => setMode('forgot')} initialError={linkError()} notice={notice} />
           )}
           {mode === 'create' && <CreateForm onBack={() => setMode('signin')} onConfirmEmail={setConfirming} />}
           {mode === 'forgot' && <ForgotForm onBack={() => setMode('signin')} />}

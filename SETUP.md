@@ -42,8 +42,8 @@ Without a `.env` file the app runs in **demo mode** and saves to the browser onl
 
 Deployed as the `username-auth` function (`--no-verify-jwt`; it does its own checks), with `0005_username_accounts.sql`.
 
-- **Authentication → Sign In / Providers → Email:** turn off **Confirm email** so testers get in right away. Anyone can then sign up with an email they don't own, so turn it back on (with custom SMTP) before a public launch.
-- **Authentication → Emails → SMTP Settings:** add a custom SMTP sender (Brevo works with a verified Gmail address; Resend needs a domain). Supabase's built-in sender is limited to a few emails an hour and officially only team members' addresses, so password resets won't reliably reach testers without this.
+- **Confirm email stays on**, so nobody can sign up with an address they don't own. That makes the next item required.
+- **Authentication → Emails → SMTP Settings:** add a custom SMTP sender (Brevo works with a verified Gmail address; Resend needs a domain). Supabase's built-in sender is limited to a few emails an hour and officially only team members' addresses, so testers can't rely on it. With custom SMTP, raise the 30-an-hour limit under **Authentication → Rate Limits** if needed.
 
 Reset emails use the implicit flow on purpose, so the link works even when it opens in Safari instead of the home-screen app.
 
