@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Sheet, { InkPicker } from './Sheet.jsx';
 import { AMOUNTS, FOOD_IDEAS, getPortions, searchFoods, scaleNutrients } from '../lib/food.js';
 import { ML_PER_OZ, waterChoices } from '../lib/units.js';
+import { PhotoButton, PhotoReview } from './PhotoScan.jsx';
 
 export default function LogSheet({ tab: initialTab, focus, ink, setInk, units, onAdd, onClose }) {
   const [tab, setTab] = useState(initialTab || 'food');
@@ -87,6 +88,7 @@ function FoodTab({ ink, focus, onAdd }) {
   const [status, setStatus] = useState('');
   const [picked, setPicked] = useState(null);
   const [manual, setManual] = useState(false);
+  const [scanned, setScanned] = useState(null);
 
   useEffect(() => {
     const q = query.trim();
@@ -112,11 +114,13 @@ function FoodTab({ ink, focus, onAdd }) {
     };
   }, [query]);
 
+  if (scanned) return <PhotoReview items={scanned} ink={ink} onAdd={onAdd} onBack={() => setScanned(null)} />;
   if (picked) return <Portion food={picked} ink={ink} onAdd={onAdd} onBack={() => setPicked(null)} />;
   if (manual) return <ManualFood ink={ink} onAdd={onAdd} onBack={() => setManual(false)} />;
 
   return (
     <>
+      <PhotoButton onResult={setScanned} />
       <label>
         what did you eat?
         <input

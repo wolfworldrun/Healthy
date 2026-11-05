@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { formatWater } from '../lib/units.js';
 
 const EXERCISE_WORDS = { weights: 'lifted weights', treadmill: 'treadmill', dance: 'danced', yoga: 'yoga', walk: 'walked' };
@@ -10,7 +11,24 @@ function describe(kind, r, units) {
   return { what: `${EXERCISE_WORDS[r.kind]} ${r.minutes} min`, meta: `~${r.calories_burned} kcal` };
 }
 
+function readOpen() {
+  try {
+    return localStorage.getItem('nj-diary-open') !== 'no';
+  } catch {
+    return true;
+  }
+}
+
 export default function JournalList({ logs, units, onDelete, aside }) {
+  const [open, setOpen] = useState(readOpen);
+  const toggle = () => {
+    setOpen(!open);
+    try {
+      localStorage.setItem('nj-diary-open', open ? 'no' : 'yes');
+    } catch {
+      /* fine, it just won't be remembered */
+    }
+  };
   const entries = [
     ...logs.food.map((r) => ({ kind: 'food', r })),
     ...logs.water.map((r) => ({ kind: 'water', r })),
@@ -20,10 +38,19 @@ export default function JournalList({ logs, units, onDelete, aside }) {
   return (
     <section className="journal" aria-label="Today's entries">
       <div className="journal-head">
-        <h3>dear diary, today I...</h3>
+        <h3>
+          <button type="button" className="diary-toggle" onClick={toggle} aria-expanded={open}>
+            <span className={`caret ${open ? 'open' : ''}`} aria-hidden="true">›</span>
+            dear diary, today I...
+          </button>
+        </h3>
         {aside}
       </div>
-      {entries.length === 0 ? (
+      {!open ? (
+        <p className="nothing" style={{ margin: 0 }}>
+          {entries.length === 0 ? 'nothing yet' : `${entries.length} ${entries.length === 1 ? 'entry' : 'entries'} tucked away`}
+        </p>
+      ) : entries.length === 0 ? (
         <p className="nothing" style={{ margin: 0 }}>...haven't written anything yet. tap the pen ✎</p>
       ) : (
         <ol>

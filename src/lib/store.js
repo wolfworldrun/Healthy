@@ -85,6 +85,45 @@ export async function deleteEntry(kind, id) {
   if (error) throw error;
 }
 
+// Every log between two days (inclusive), for the week view.
+export async function loadRange(from, to) {
+  if (isDemo) {
+    const all = demo.read('logs', { food: [], water: [], exercise: [] });
+    const pick = (k) => (all[k] ?? []).filter((r) => r.day >= from && r.day <= to);
+    return { food: pick('food'), water: pick('water'), exercise: pick('exercise') };
+  }
+  const [food, water, exercise] = await Promise.all(
+    [TABLES.food, TABLES.water, TABLES.exercise].map((t) =>
+      supabase.from(t).select('*').gte('day', from).lte('day', to).then(({ data, error }) => {
+        if (error) throw error;
+        return data;
+      })
+    )
+  );
+  return { food, water, exercise };
+}
+
+// Friends page: goal keys only, shared solely while the person has opted in.
+export async function saveWins(day, done) {
+  if (isDemo) return;
+  const { error } = await supabase.from('daily_wins').upsert({ day, done, updated_at: new Date().toISOString() });
+  if (error) throw error;
+}
+
+export async function clearWins() {
+  if (isDemo) return;
+  const { data: { user } } = await supabase.auth.getUser();
+  const { error } = await supabase.from('daily_wins').delete().eq('user_id', user.id);
+  if (error) throw error;
+}
+
+export async function loadFeed() {
+  if (isDemo) return [];
+  const { data, error } = await supabase.rpc('social_feed');
+  if (error) throw error;
+  return data;
+}
+
 // Full weight history, oldest first.
 export async function loadWeights() {
   if (isDemo) {

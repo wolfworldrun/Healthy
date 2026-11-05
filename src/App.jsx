@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { isDemo, recoveryLanding, supabase } from './lib/supabase.js';
-import { addEntry, deleteEntry, loadDay, loadProfile, saveProfile, todayKey } from './lib/store.js';
+import { addEntry, deleteEntry, loadDay, loadProfile, saveProfile, saveWins, todayKey } from './lib/store.js';
 import {
   buildTasks, calcGoals, dayFraction, dollHealth, mostBehind, sumTotals
 } from '../supabase/functions/_shared/goals.js';
@@ -14,6 +14,12 @@ import ClosetSheet from './components/ClosetSheet.jsx';
 import SettingsSheet from './components/SettingsSheet.jsx';
 import SignIn, { NewPassword } from './components/SignIn.jsx';
 import WeightSheet from './components/WeightSheet.jsx';
+import WeekSheet from './components/WeekSheet.jsx';
+import SocialSheet from './components/SocialSheet.jsx';
+
+// How long the doll's tumbles run; these match the animations in styles.css.
+const FALL_MS = 1900;
+const KO_MS = 5200;
 
 const MOVES = [
   ['weights', Dumbbell, 'weights'],
@@ -82,6 +88,7 @@ function Today({ userId }) {
   const [profile, setProfile] = useState(null);
   const [day, setDay] = useState(todayKey());
   const [logs, setLogs] = useState({ food: [], water: [], exercise: [] });
+  const [logsDay, setLogsDay] = useState(null);
   const [ink, setInkState] = useState(readInk);
   const [sheet, setSheet] = useState(null);
   const [toastMsg, setToastMsg] = useState('');
@@ -115,7 +122,12 @@ function Today({ userId }) {
   }, [userId, toast]);
 
   const refresh = useCallback(() => {
-    loadDay(day).then(setLogs).catch((e) => toast(e.message));
+    loadDay(day)
+      .then((l) => {
+        setLogs(l);
+        setLogsDay(day);
+      })
+      .catch((e) => toast(e.message));
   }, [day, toast]);
 
   useEffect(refresh, [refresh]);
@@ -145,6 +157,15 @@ function Today({ userId }) {
       ? 0
       : dayFraction(now.getHours(), now.getMinutes(), profile?.reminder_start_hour ?? 8, profile?.reminder_end_hour ?? 21);
   const health = dollHealth(tasks, expected);
+
+  // Keep today's crossed-off goals current for the friends page, once today's logs have loaded.
+  const doneKeys = tasks.filter((t) => t.done).map((t) => t.key).join(',');
+  const sharing = !!profile?.share_social;
+  useEffect(() => {
+    if (!sharing || day !== today || logsDay !== today) return;
+    saveWins(today, doneKeys ? doneKeys.split(',') : []).catch(() => {});
+  }, [sharing, day, today, logsDay, doneKeys]);
+
   const allDone = tasks.every((t) => t.done);
   const behind = mostBehind(tasks, expected);
   const mood = allDone
@@ -202,10 +223,10 @@ function Today({ userId }) {
     if (p.count >= 3) {
       p.count = 0;
       setTumble('ko');
-      setTimeout(() => setTumble(null), 4600);
+      setTimeout(() => setTumble(null), KO_MS);
     } else {
       setTumble('fall');
-      setTimeout(() => setTumble(null), 1400);
+      setTimeout(() => setTumble(null), FALL_MS);
     }
   };
 
@@ -236,6 +257,11 @@ function Today({ userId }) {
       </header>
 
       {isDemo && <p className="muted" style={{ margin: 0, fontSize: 15 }}>demo mode: saved on this device only</p>}
+
+      <nav className="page-nav" aria-label="More pages">
+        <button className="chip" onClick={() => setSheet({ type: 'week' })}>my week</button>
+        <button className="chip" onClick={() => setSheet({ type: 'social' })}>friends</button>
+      </nav>
 
       <div className="desk">
         <div className="notes">
@@ -275,6 +301,7 @@ function Today({ userId }) {
             health={tumble ? 1 : health}
             celebrate={allDone && !tumble}
             dazed={tumble === 'ko'}
+            moving={!!tumble}
             className="doll-svg"
           />
         </button>
@@ -321,6 +348,21 @@ function Today({ userId }) {
           onClose={() => setSheet(null)}
           toast={toast}
         />
+      )}
+      {sheet?.type === 'week' && (
+        <WeekSheet
+          profile={profile}
+          units={units}
+          onPickDay={(k) => {
+            setDay(k);
+            setSheet(null);
+          }}
+          onClose={() => setSheet(null)}
+          toast={toast}
+        />
+      )}
+      {sheet?.type === 'social' && (
+        <SocialSheet profile={profile} ink={ink} onSave={save} onClose={() => setSheet(null)} toast={toast} />
       )}
       {sheet?.type === 'settings' && (
         <SettingsSheet

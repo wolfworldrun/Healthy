@@ -47,6 +47,12 @@ Deployed as the `username-auth` function (`--no-verify-jwt`; it does its own che
 
 Reset emails use the implicit flow on purpose, so the link works even when it opens in Safari instead of the home-screen app.
 
+## 2c. Food photo scanning
+
+The `food-photo` function (`--no-verify-jwt`; it checks the user's login itself) sends a shrunken photo to Claude and returns estimates the user approves. Photos aren't stored, and each person gets 20 scans a day.
+
+Create a key at https://console.anthropic.com (billed separately from a Claude subscription), then add it under **Edge Functions → Secrets** in Supabase as `ANTHROPIC_API_KEY`. The app says "photo scanning isn't set up yet" until then.
+
 ## 3. Food search key
 
 Get a free key at https://fdc.nal.usda.gov/api-key-signup and put it in `VITE_USDA_API_KEY`. (`DEMO_KEY` works but only allows about 30 searches an hour.)
