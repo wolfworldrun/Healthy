@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Sheet, { InkPicker } from './Sheet.jsx';
 import { AMOUNTS, FOOD_IDEAS, getPortions, searchFoods, scaleNutrients } from '../lib/food.js';
+import { loadUsualFoods } from '../lib/store.js';
 import { ML_PER_OZ, waterChoices } from '../lib/units.js';
 import { PhotoButton, PhotoReview } from './PhotoScan.jsx';
 import { PHOTO_SCAN_ENABLED } from '../lib/photo.js';
@@ -83,6 +84,47 @@ function Ideas({ focus, onPick }) {
   );
 }
 
+function UsualFoods({ ink, onAdd }) {
+  const [foods, setFoods] = useState([]);
+
+  useEffect(() => {
+    loadUsualFoods().then(setFoods).catch(() => {});
+  }, []);
+
+  if (foods.length === 0) return null;
+  return (
+    <div>
+      <p className="muted" style={{ margin: '6px 0 0' }}>my usual foods, tap to write it down</p>
+      <ul className="results">
+        {foods.map((f) => (
+          <li key={f.key}>
+            <button
+              onClick={() =>
+                onAdd('food', {
+                  name: f.name,
+                  amount_label: f.amount_label,
+                  calories: Number(f.calories),
+                  protein: Number(f.protein),
+                  carbs: Number(f.carbs),
+                  fat: Number(f.fat),
+                  source: f.source,
+                  ink
+                })
+              }
+            >
+              <span className="name">{f.name}</span>
+              <span className="sub">
+                {f.amount_label ? `${f.amount_label} · ` : ''}
+                {Math.round(f.calories)} kcal · P {Math.round(f.protein)} C {Math.round(f.carbs)} F {Math.round(f.fat)}
+              </span>
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 function FoodTab({ ink, focus, onAdd }) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
@@ -133,7 +175,12 @@ function FoodTab({ ink, focus, onAdd }) {
         />
       </label>
       {status && <p className="muted">{status}</p>}
-      {query.trim().length < 2 && <Ideas focus={focus} onPick={setQuery} />}
+      {query.trim().length < 2 && (
+        <>
+          <UsualFoods ink={ink} onAdd={onAdd} />
+          <Ideas focus={focus} onPick={setQuery} />
+        </>
+      )}
       <ul className="results">
         {results.map((f) => (
           <li key={f.id}>

@@ -103,6 +103,31 @@ export async function deleteEntry(kind, id) {
   if (error) throw error;
 }
 
+// The foods someone logs most, worked out from their recent entries. The same food at a
+// different portion counts separately, since a tap logs exactly what's shown.
+export async function loadUsualFoods(limit = 6) {
+  let rows;
+  if (isDemo) {
+    rows = [...(demo.read('logs', {}).food ?? [])].reverse();
+  } else {
+    const { data, error } = await supabase
+      .from(TABLES.food)
+      .select('name, amount_label, calories, protein, carbs, fat, source')
+      .order('created_at', { ascending: false })
+      .limit(300);
+    if (error) throw error;
+    rows = data;
+  }
+  // Newest first, so each food keeps its latest numbers and recent foods win ties.
+  const foods = new Map();
+  for (const r of rows) {
+    const key = `${r.name.trim().toLowerCase()}|${r.amount_label ?? ''}`;
+    if (foods.has(key)) foods.get(key).times += 1;
+    else foods.set(key, { ...r, key, order: foods.size, times: 1 });
+  }
+  return [...foods.values()].sort((a, b) => b.times - a.times || a.order - b.order).slice(0, limit);
+}
+
 // Every log between two days (inclusive), for the week view.
 export async function loadRange(from, to) {
   if (isDemo) {
